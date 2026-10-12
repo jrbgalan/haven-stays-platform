@@ -96,6 +96,14 @@ module.exports = {
   			},
   			'shimmer': {
   				'100%': { transform: 'translateX(100%)' }
+  			},
+  			'marquee': {
+  				'0%': { transform: 'translateX(0%)' },
+  				'100%': { transform: 'translateX(-50%)' }
+  			},
+  			'marquee-reverse': {
+  				'0%': { transform: 'translateX(-50%)' },
+  				'100%': { transform: 'translateX(0%)' }
   			}
   		},
   		animation: {
@@ -104,7 +112,9 @@ module.exports = {
   			'fade-up': 'fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
   			'fade-in': 'fade-in 0.5s ease-out both',
   			'scale-in': 'scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
-  			'shimmer': 'shimmer 1.6s infinite'
+  			'shimmer': 'shimmer 1.6s infinite',
+  			'marquee': 'marquee 50s linear infinite',
+  			'marquee-reverse': 'marquee-reverse 50s linear infinite'
   		}
   	}
   },

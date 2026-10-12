@@ -6,18 +6,24 @@ import SmartImage from "@/components/ui/SmartImage";
 import SaveButton from "@/components/listings/SaveButton";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import type { Listing } from "@/types/listing";
 
-export default function ListingCard({ listing, index = 0 }) {
+interface ListingCardProps {
+  listing: Listing;
+  index?: number;
+}
+
+export default function ListingCard({ listing, index = 0 }: ListingCardProps) {
   const [active, setActive] = useState(0);
   const images = listing.images || [];
   const count = images.length;
 
-  const prev = (e) => {
+  const prev = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setActive((i) => (i - 1 + count) % count);
   };
-  const next = (e) => {
+  const next = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setActive((i) => (i + 1) % count);

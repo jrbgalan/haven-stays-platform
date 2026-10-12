@@ -22,6 +22,10 @@ import Messages from '@/pages/Messages';
 import About from '@/pages/About';
 import Concierge from '@/pages/Concierge';
 import Press from '@/pages/Press';
+import Experiences from '@/pages/Experiences';
+import Destinations from '@/pages/Destinations';
+import Deals from '@/pages/Deals';
+import Journal from '@/pages/Journal';
 import HelpCenter from '@/pages/HelpCenter';
 import Cancellation from '@/pages/Cancellation';
 import Privacy from '@/pages/Privacy';
@@ -59,6 +63,10 @@ const AuthenticatedApp: React.FC = () => {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/explore" element={<Explore />} />
+        <Route path="/experiences" element={<Experiences />} />
+        <Route path="/destinations" element={<Destinations />} />
+        <Route path="/deals" element={<Deals />} />
+        <Route path="/journal" element={<Journal />} />
         <Route path="/listing/:id" element={<ListingDetail />} />
         <Route path="/about" element={<About />} />
         <Route path="/concierge" element={<Concierge />} />
