@@ -15,6 +15,7 @@ import AroundThisStay from "@/components/places/AroundThisStay";
 import SimilarStays from "@/components/places/SimilarStays";
 import { formatCurrency, nightsBetween, calcTotal } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useSeo } from "@/lib/seo";
 
 const AMENITY_ICONS = {
   "Infinity Pool": Bath, "Heated Pool": Bath, Pool: Bath, "Private Beach": MapPin, "Beach Access": MapPin,
@@ -27,7 +28,12 @@ const AMENITY_ICONS = {
 export default function ListingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [listing, setListing] = useState(null);
+  const [listing, setListing] = useState<any>(null);
+  useSeo(
+    listing ? `${listing.title} — ${listing.city}` : "Luxury Stay Details",
+    listing?.description || "Experience handpicked luxury architecture and serene amenities.",
+    listing?.images?.[0]
+  );
   const [reviews, setReviews] = useState([]);
   const [bookedRanges, setBookedRanges] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -471,3 +471,4 @@ export async function subscribeNewsletter(email: string, source = "website_foote
     handleServiceError(err, `subscribeNewsletter(${email})`);
   }
 }
+

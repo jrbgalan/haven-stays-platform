@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { client } from "@/api/client";
 import { appParams } from '@/lib/app-params';
+import { DEMO_GUEST_USER, DEMO_HOST_USER } from '@/lib/seedDemoData';
 
 export interface User {
   id: string;
@@ -23,6 +24,8 @@ export interface AuthContextType {
   navigateToLogin: () => void;
   checkUserAuth: () => Promise<void>;
   checkAppState: () => Promise<void>;
+  loginAsGuest: () => Promise<void>;
+  loginAsHost: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -49,8 +52,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const publicSettings = await client.app.getPublicSettings();
         setAppPublicSettings(publicSettings);
         
-        // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token) {
+        // Check if user is authenticated via token or local storage
+        if (appParams.token || localStorage.getItem('haven_current_user')) {
           await checkUserAuth();
         } else {
           setIsLoadingAuth(false);
@@ -134,6 +137,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginAsGuest = async () => {
+    const u = await (client.auth as any).switchUser(DEMO_GUEST_USER);
+    setUser(u);
+    setIsAuthenticated(true);
+    setAuthChecked(true);
+  };
+
+  const loginAsHost = async () => {
+    const u = await (client.auth as any).switchUser(DEMO_HOST_USER);
+    setUser(u);
+    setIsAuthenticated(true);
+    setAuthChecked(true);
+  };
+
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
@@ -164,7 +181,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logout,
       navigateToLogin,
       checkUserAuth,
-      checkAppState
+      checkAppState,
+      loginAsGuest,
+      loginAsHost,
     }}>
       {children}
     </AuthContext.Provider>

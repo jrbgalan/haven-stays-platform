@@ -13,11 +13,16 @@ import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import { ListingCardSkeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/button";
 import { COLLECTIONS, HERO_IMAGE, GEN_IMAGES } from "@/lib/constants";
+import { useSeo } from "@/lib/seo";
 import type { Listing } from "@/types/listing";
 
 const HERO_IMG = HERO_IMAGE;
 
 export default function Home() {
+  useSeo(
+    "Haven — Luxury Stays, Curated",
+    "Discover extraordinary private stays, beachfront villas, day use retreats, and bespoke travel experiences across the globe."
+  );
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");

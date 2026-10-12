@@ -37,7 +37,13 @@ const PRODUCT_BADGE: Record<string, { label: string; icon: LucideIcon; color: st
   packages: { label: "Hotel + Flight", icon: Sparkles, color: "bg-champagne/20 text-champagne-dark dark:text-champagne-light" },
 };
 
+import { useSeo } from "@/lib/seo";
+
 export default function Dashboard() {
+  useSeo(
+    "My Trips & Reservations",
+    "View and manage your confirmed stays, day use reservations, airport transfers, activities, and viewing appointments."
+  );
   const { toast } = useToast();
   const [tab, setTab] = useState<"trips" | "appts">("trips");
   const [bookings, setBookings] = useState<Booking[]>([]);

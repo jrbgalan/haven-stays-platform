@@ -2,21 +2,52 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111'/%3E%3Cpath d='M8 22V10h2.4l5.6 7.2V10H18v12h-2.4L10 14.8V22H8z' fill='%23C9A96E'/%3E%3C/svg%3E" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#FAFAF8" />
+    <meta name="theme-color" content="#141312" />
     <meta name="description" content="Haven — a curated collection of extraordinary luxury stays. Beachfront villas, mountain cabins, and city penthouses, handpicked for the discerning traveler." />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://haven.luxury/" />
     <meta property="og:title" content="Haven — Luxury Stays, Curated" />
     <meta property="og:description" content="A curated collection of extraordinary luxury stays around the world." />
-    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og-image.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Haven — Luxury Stays, Curated" />
+    <meta name="twitter:description" content="A curated collection of extraordinary luxury stays around the world." />
+    <meta name="twitter:image" content="/og-image.svg" />
+
     <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
     <title>Haven — Luxury Stays, Curated</title>
   </head>
-  <body>
-    <div id="root"></div>
+  <body class="bg-background text-foreground antialiased selection:bg-champagne/25 selection:text-foreground">
+    <div id="root">
+      <!-- Branded Luxury Pre-Hydration Screen -->
+      <div id="haven-preloader" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#141312;color:#FAFAF8;z-index:9999;font-family:'Inter',system-ui,sans-serif;">
+        <div style="position:relative;width:68px;height:68px;border-radius:18px;background:linear-gradient(135deg,#24211D,#181715);border:1px solid rgba(201,169,110,0.35);display:grid;place-items:center;box-shadow:0 12px 36px rgba(0,0,0,0.5);animation:havenPulse 2s cubic-bezier(0.4,0,0.6,1) infinite;">
+          <span style="font-family:'Fraunces',Georgia,serif;font-size:34px;font-weight:600;color:#C9A96E;line-height:1;">H</span>
+        </div>
+        <div style="margin-top:24px;text-align:center;">
+          <div style="font-family:'Fraunces',Georgia,serif;font-size:24px;letter-spacing:-0.02em;color:#FFFFFF;font-weight:400;">Haven</div>
+          <div style="margin-top:6px;font-size:11px;letter-spacing:0.25em;text-transform:uppercase;color:#C9A96E;font-weight:500;">Curated Sanctuaries</div>
+        </div>
+        <style>
+          @keyframes havenPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(201,169,110,0.3); }
+            50% { transform: scale(1.04); box-shadow: 0 0 24px 6px rgba(201,169,110,0.2); }
+          }
+        </style>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

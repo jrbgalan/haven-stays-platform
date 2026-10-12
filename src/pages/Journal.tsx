@@ -86,7 +86,13 @@ const ARTICLES: Article[] = [
   }
 ];
 
+import { useSeo } from "@/lib/seo";
+
 export default function Journal() {
+  useSeo(
+    "The Haven Journal — Architecture & Field Notes",
+    "Essays on architecture, design, quietude, gastronomy, and mindful luxury travel from global editorial contributors."
+  );
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 

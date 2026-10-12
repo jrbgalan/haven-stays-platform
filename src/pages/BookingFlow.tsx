@@ -9,6 +9,7 @@ import DateRangePicker from "@/components/booking/DateRangePicker";
 import SmartImage from "@/components/ui/SmartImage";
 import { formatCurrency, formatDate, nightsBetween, calcTotal, todayISO } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useSeo } from "@/lib/seo";
 
 const STEPS = [
   { label: "Dates", icon: Calendar },
@@ -17,6 +18,10 @@ const STEPS = [
 ];
 
 export default function BookingFlow() {
+  useSeo(
+    "Complete Your Reservation",
+    "Secure your luxury stay booking with transparent pricing, instant confirmation, and host guarantee."
+  );
   const { id } = useParams();
   const [params] = useSearchParams();
   const navigate = useNavigate();

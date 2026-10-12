@@ -368,3 +368,4 @@ export function getStayProvider(): StayProvider {
 export function setStayProvider(provider: StayProvider): void {
   activeProvider = provider;
 }
+

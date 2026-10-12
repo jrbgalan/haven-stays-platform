@@ -49,21 +49,10 @@ if (!localStorage.getItem(KEY_LISTINGS)) {
     save(KEY_LISTINGS, enrichListings(existing));
   }
 }
-if (!localStorage.getItem(KEY_PRODUCT_BOOKINGS)) {
-  save(KEY_PRODUCT_BOOKINGS, INITIAL_PRODUCT_BOOKINGS);
-}
-if (!localStorage.getItem(KEY_REVIEWS)) {
-  save(KEY_REVIEWS, CURATED_REVIEWS);
-}
-if (!localStorage.getItem(KEY_USER)) {
-  save(KEY_USER, {
-    id: 'user-demo-1',
-    email: 'guest@haven.luxury',
-    full_name: 'Julian Vance',
-    role: 'admin',
-    created_at: new Date().toISOString(),
-  });
-}
+import { initDemoData } from '@/lib/seedDemoData';
+
+// Ensure rich seeded sample bookings, chats, reviews, and appointments exist
+initDemoData();
 
 function generateRef(prefix: string) {
   return `${prefix}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -74,6 +63,11 @@ export const client = {
     me: async () => {
       const u = load(KEY_USER, null);
       return u;
+    },
+    switchUser: async (user: any) => {
+      save(KEY_USER, user);
+      localStorage.setItem('haven_access_token', `token_${user.id}`);
+      return user;
     },
     login: async ({ email }: { email: string; password?: string }) => {
       const user = {

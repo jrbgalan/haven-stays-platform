@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/use-toast";
 import SmartImage from "@/components/ui/SmartImage";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useSeo } from "@/lib/seo";
 
 const QUICK_REPLIES = [
   "Is early check-in possible?",
@@ -29,6 +30,10 @@ function timeOf(d) {
 }
 
 export default function Messages() {
+  useSeo(
+    "Host Messages & Communications",
+    "Private, direct messaging with your luxury hosts, concierges, and guests."
+  );
   const { user } = useAuth();
   const { toast } = useToast();
   const [conversations, setConversations] = useState<Conversation[]>([]);

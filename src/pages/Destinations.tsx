@@ -133,9 +133,15 @@ const DESTINATIONS: DestinationItem[] = [
   }
 ];
 
+import { useSeo } from "@/lib/seo";
+
 const REGIONS = ["All", "Southeast Asia", "East Asia", "Mediterranean", "Alpine & Americas"];
 
 export default function Destinations() {
+  useSeo(
+    "Curated Global Destinations",
+    "Explore coveted travel sanctuaries across Southeast Asia, the Mediterranean, Japan, the Swiss Alps, and the Americas."
+  );
   const [activeRegion, setActiveRegion] = useState("All");
 
   const filtered = activeRegion === "All"

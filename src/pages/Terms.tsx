@@ -20,7 +20,10 @@ const sections = [
   { id: "contact", title: "Contact", body: [<p key="1">Questions about these terms? Reach us through the Help Center. This is a portfolio demonstration project; content is sample text and not legal advice.</p>] },
 ];
 
+import { useSeo } from "@/lib/seo";
+
 export default function Terms() {
+  useSeo("Terms of Service", "The rules, guest standards, and policies for using Haven.");
   return (
     <LegalPage
       title="Terms of Service"

@@ -68,7 +68,13 @@ const DEALS: DealOffer[] = [
   }
 ];
 
+import { useSeo } from "@/lib/seo";
+
 export default function Deals() {
+  useSeo(
+    "Exclusive Privileges & Seasonal Offers",
+    "Hand-curated value for Haven guests. Reserved perks, complimentary nights, and bespoke resort credits."
+  );
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const handleCopy = (code: string) => {

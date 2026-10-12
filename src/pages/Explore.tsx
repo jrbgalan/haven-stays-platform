@@ -26,6 +26,7 @@ import {
 import ProductBookingModal, { BookingModalData } from "@/components/booking/ProductBookingModal";
 import { ListingCardSkeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/utils";
+import { useSeo } from "@/lib/seo";
 import type { Listing } from "@/types/listing";
 import type { ProductType, Activity, Transfer, Flight, HotelFlightBundle } from "@/types/products";
 import type { AISmartSearchResult } from "@/types/ai";
@@ -50,6 +51,10 @@ const SORTS_MAP: Record<string, { id: string; label: string }[]> = {
 };
 
 export default function Explore() {
+  useSeo(
+    "Explore Stays & Multi-Product Escapes",
+    "Filter hundreds of vetted luxury properties, beachfront villas, day use retreats, activities, transfers, and flights."
+  );
   const [params, setParams] = useSearchParams();
 
   // Active product category tab

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5D1A6"/>
+      <stop offset="50%" stop-color="#C9A96E"/>
+      <stop offset="100%" stop-color="#9E7B3B"/>
+    </linearGradient>
+    <linearGradient id="darkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1F1E1B"/>
+      <stop offset="100%" stop-color="#121110"/>
+    </linearGradient>
+  </defs>
+  <!-- Background with subtle luxury rounded square -->
+  <rect width="64" height="64" rx="16" fill="url(#darkBg)"/>
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="none" stroke="#C9A96E" stroke-opacity="0.25" stroke-width="1"/>
+  
+  <!-- Serif Monogram 'H' -->
+  <g fill="url(#gold)">
+    <!-- Left Stem -->
+    <path d="M18 16h8v2.5h-2.5v21H26V42h-8v-2.5h2.5v-21H18V16z"/>
+    <!-- Crossbar -->
+    <rect x="23.5" y="27.5" width="17" height="3" rx="0.5"/>
+    <!-- Right Stem -->
+    <path d="M38 16h8v2.5h-2.5v21H46V42h-8v-2.5h2.5v-21H38V16z"/>
+  </g>
+
+  <!-- Luxury Diamond Accents -->
+  <polygon points="32,18 34,20 32,22 30,20" fill="url(#gold)" opacity="0.8"/>
+</svg>

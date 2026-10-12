@@ -165,7 +165,13 @@ const TABS = [
   { id: "availability", label: "Availability", icon: Ban },
 ];
 
+import { useSeo } from "@/lib/seo";
+
 export default function HostDashboard() {
+  useSeo(
+    "Host Management & Reservations",
+    "Oversee your luxury stays, reservation requests, availability blocks, and guest revenues on Haven."
+  );
   const { user } = useAuth();
   const { toast } = useToast();
   const [tab, setTab] = useState("overview");

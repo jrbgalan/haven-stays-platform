@@ -140,6 +140,8 @@ const EXPERIENCES: Experience[] = [
   }
 ];
 
+import { useSeo } from "@/lib/seo";
+
 const CATEGORIES = [
   "All",
   "Maritime & Yachting",
@@ -149,6 +151,10 @@ const CATEGORIES = [
 ];
 
 export default function Experiences() {
+  useSeo(
+    "Curated Experiences & Private Charters",
+    "Private catamaran charters, truffle foraging in Tuscany, alpine heli-skiing, and mindfulness retreats."
+  );
   const [selectedCat, setSelectedCat] = useState("All");
   const [bookedId, setBookedId] = useState<string | null>(null);
 

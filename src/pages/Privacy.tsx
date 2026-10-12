@@ -40,7 +40,10 @@ const sections = [
   { id: "contact", title: "Contact", body: [<p key="1">Questions about privacy? Reach our support team via the Help Center. This is a portfolio demonstration project, so no real data is processed.</p>] },
 ];
 
+import { useSeo } from "@/lib/seo";
+
 export default function Privacy() {
+  useSeo("Privacy Policy", "How Haven collects, uses, and safeguards your information.");
   return (
     <LegalPage
       title="Privacy Policy"

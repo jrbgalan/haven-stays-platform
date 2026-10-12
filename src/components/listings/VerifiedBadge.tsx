@@ -57,3 +57,4 @@ export default function VerifiedBadge({ className, size = "sm" }: VerifiedBadgeP
     </div>
   );
 }
+

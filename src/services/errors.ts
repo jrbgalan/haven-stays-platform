@@ -61,3 +61,4 @@ export function handleServiceError(error: unknown, context: string): never {
     error
   );
 }
+

@@ -9,8 +9,13 @@ import SmartImage from "@/components/ui/SmartImage";
 import { TIME_SLOTS } from "@/lib/constants";
 import { todayISO, addDays, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useSeo } from "@/lib/seo";
 
 export default function AppointmentBooking() {
+  useSeo(
+    "Schedule Private Viewing",
+    "Arrange an in-person or 4K virtual walkthrough with the property host before reserving."
+  );
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();

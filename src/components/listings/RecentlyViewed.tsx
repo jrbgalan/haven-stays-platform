@@ -127,3 +127,4 @@ export default function RecentlyViewed({ currentListingId, className = "" }: Rec
     </div>
   );
 }
+

@@ -1,7 +1,7 @@
-import React from 'react';
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
+import React, { Suspense, lazy } from 'react';
+import { Toaster } from "@/components/ui/toaster";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClientInstance } from '@/lib/query-client';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/ThemeContext';
@@ -10,43 +10,42 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/layout/Layout';
-// Pages
+import PageLoadingScreen from '@/components/ui/PageLoadingScreen';
+
+// Eager load Home for instant First Contentful Paint
 import Home from '@/pages/Home';
-import Explore from '@/pages/Explore';
-import ListingDetail from '@/pages/ListingDetail';
-import BookingFlow from '@/pages/BookingFlow';
-import AppointmentBooking from '@/pages/AppointmentBooking';
-import Dashboard from '@/pages/Dashboard';
-import HostDashboard from '@/pages/HostDashboard';
-import Messages from '@/pages/Messages';
-import About from '@/pages/About';
-import Concierge from '@/pages/Concierge';
-import Press from '@/pages/Press';
-import Experiences from '@/pages/Experiences';
-import Destinations from '@/pages/Destinations';
-import Deals from '@/pages/Deals';
-import Journal from '@/pages/Journal';
-import HelpCenter from '@/pages/HelpCenter';
-import Cancellation from '@/pages/Cancellation';
-import Privacy from '@/pages/Privacy';
-import Terms from '@/pages/Terms';
-import Report from '@/pages/Report';
-import NotFound from '@/pages/NotFound';
-// Auth pages
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
+
+// Lazy-load all remaining pages for optimal Lighthouse bundle splitting
+const Explore = lazy(() => import('@/pages/Explore'));
+const ListingDetail = lazy(() => import('@/pages/ListingDetail'));
+const BookingFlow = lazy(() => import('@/pages/BookingFlow'));
+const AppointmentBooking = lazy(() => import('@/pages/AppointmentBooking'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const HostDashboard = lazy(() => import('@/pages/HostDashboard'));
+const Messages = lazy(() => import('@/pages/Messages'));
+const About = lazy(() => import('@/pages/About'));
+const Concierge = lazy(() => import('@/pages/Concierge'));
+const Press = lazy(() => import('@/pages/Press'));
+const Experiences = lazy(() => import('@/pages/Experiences'));
+const Destinations = lazy(() => import('@/pages/Destinations'));
+const Deals = lazy(() => import('@/pages/Deals'));
+const Journal = lazy(() => import('@/pages/Journal'));
+const HelpCenter = lazy(() => import('@/pages/HelpCenter'));
+const Cancellation = lazy(() => import('@/pages/Cancellation'));
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const Terms = lazy(() => import('@/pages/Terms'));
+const Report = lazy(() => import('@/pages/Report'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
+const Login = lazy(() => import('@/pages/Login'));
+const Register = lazy(() => import('@/pages/Register'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 
 const AuthenticatedApp: React.FC = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-4 border-secondary border-t-foreground rounded-full animate-spin"></div>
-      </div>
-    );
+    return <PageLoadingScreen message="Haven" submessage="Authenticating session…" />;
   }
 
   if (authError) {
@@ -59,37 +58,39 @@ const AuthenticatedApp: React.FC = () => {
   }
 
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/explore" element={<Explore />} />
-        <Route path="/experiences" element={<Experiences />} />
-        <Route path="/destinations" element={<Destinations />} />
-        <Route path="/deals" element={<Deals />} />
-        <Route path="/journal" element={<Journal />} />
-        <Route path="/listing/:id" element={<ListingDetail />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/concierge" element={<Concierge />} />
-        <Route path="/press" element={<Press />} />
-        <Route path="/help" element={<HelpCenter />} />
-        <Route path="/cancellation" element={<Cancellation />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/report" element={<Report />} />
-        <Route path="/host" element={<HostDashboard />} />
-        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-          <Route path="/booking/:id" element={<BookingFlow />} />
-          <Route path="/appointment/:id" element={<AppointmentBooking />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/messages" element={<Messages />} />
+    <Suspense fallback={<PageLoadingScreen message="Haven" submessage="Opening sanctuary…" />}>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/experiences" element={<Experiences />} />
+          <Route path="/destinations" element={<Destinations />} />
+          <Route path="/deals" element={<Deals />} />
+          <Route path="/journal" element={<Journal />} />
+          <Route path="/listing/:id" element={<ListingDetail />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/concierge" element={<Concierge />} />
+          <Route path="/press" element={<Press />} />
+          <Route path="/help" element={<HelpCenter />} />
+          <Route path="/cancellation" element={<Cancellation />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/report" element={<Report />} />
+          <Route path="/host" element={<HostDashboard />} />
+          <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+            <Route path="/booking/:id" element={<BookingFlow />} />
+            <Route path="/appointment/:id" element={<AppointmentBooking />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/messages" element={<Messages />} />
+          </Route>
         </Route>
-      </Route>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 
