@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, ArrowDown, ShieldCheck, Sparkles, Globe2 } from "lucide-react";
-import { client } from "@/api/client";
+import { getListings } from "@/services";
 import SearchBar from "@/components/search/SearchBar";
 import CategoryChips from "@/components/listings/CategoryChips";
 import ListingCard from "@/components/listings/ListingCard";
@@ -27,7 +27,7 @@ export default function Home() {
   const heroOpacity = useTransform(scrollY, [0, 500], [1, 0.4]);
 
   useEffect(() => {
-    client.entities.Listing.list("-rating", 12)
+    getListings()
       .then((res: Listing[]) => setListings(res || []))
       .catch(() => setListings([]))
       .finally(() => setLoading(false));

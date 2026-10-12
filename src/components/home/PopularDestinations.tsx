@@ -117,7 +117,11 @@ export default function PopularDestinations() {
             const isSibling = isAnyHovered && !isHovered;
 
             return (
-              <SectionReveal key={dest.id} delay={index * 0.05}>
+              <SectionReveal
+                key={dest.id}
+                delay={index * 0.05}
+                className={isHovered ? "relative z-30" : "relative z-10"}
+              >
                 <Link
                   to={`/explore?location=${encodeURIComponent(dest.name)}`}
                   onMouseEnter={() => setHoveredId(dest.id)}

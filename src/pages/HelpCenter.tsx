@@ -6,7 +6,7 @@ import PageHero from "@/components/ui/PageHero";
 import SectionReveal from "@/components/ui/SectionReveal";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/lib/AuthContext";
-import { client } from "@/api/client";
+import { createSupportTicket } from "@/services";
 import { GEN_IMAGES } from "@/lib/constants";
 
 const CATEGORIES = [
@@ -72,10 +72,16 @@ export default function HelpCenter() {
     if (!user) { toast({ title: "Please sign in", description: "Support requests need an account.", variant: "destructive" }); return; }
     setSubmitting(true);
     try {
-      await client.entities.SupportTicket.create({ userId: user.id, name: form.name, email: form.email, topic: form.topic, message: form.message });
+      await createSupportTicket({
+        userId: user.id,
+        name: form.name,
+        email: form.email,
+        subject: form.topic,
+        message: form.message,
+      });
       setSent(true);
-    } catch (err) {
-      toast({ title: "Couldn't submit", description: err.message, variant: "destructive" });
+    } catch (err: any) {
+      toast({ title: "Couldn't submit", description: err?.message, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }

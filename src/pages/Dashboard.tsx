@@ -6,12 +6,19 @@ import {
   Plane, Car, Compass, Sparkles, Building2, Home, Sun, Moon,
   type LucideIcon,
 } from "lucide-react";
-import { client } from "@/api/client";
+import {
+  getBookings,
+  getProductBookings,
+  getAppointments,
+  updateBooking,
+  updateProductBooking,
+  updateAppointment,
+} from "@/services";
 import { useToast } from "@/components/ui/use-toast";
 import SmartImage from "@/components/ui/SmartImage";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { ProductBooking } from "@/types/products";
+import type { Booking, ProductBooking, Appointment } from "@/types/entities";
 
 const STATUS = {
   confirmed: { label: "Confirmed", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400", icon: CheckCircle2 },
@@ -33,23 +40,36 @@ const PRODUCT_BADGE: Record<string, { label: string; icon: LucideIcon; color: st
 export default function Dashboard() {
   const { toast } = useToast();
   const [tab, setTab] = useState<"trips" | "appts">("trips");
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [productBookings, setProductBookings] = useState<ProductBooking[]>([]);
-  const [appts, setAppts] = useState<any[]>([]);
+  const [appts, setAppts] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
     setLoading(true);
     try {
       const [b, pb, a] = await Promise.all([
-        client.entities.Booking.filter({}).catch(() => []),
-        client.entities.ProductBooking.filter({}).catch(() => []),
-        client.entities.Appointment.filter({}).catch(() => []),
+        getBookings().catch(() => []),
+        getProductBookings().catch(() => []),
+        getAppointments().catch(() => []),
       ]);
 
-      setBookings(b.sort((x: any, y: any) => new Date(y.checkIn || y.createdAt).getTime() - new Date(x.checkIn || x.createdAt).getTime()));
-      setProductBookings(pb.sort((x: ProductBooking, y: ProductBooking) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime()));
-      setAppts(a.sort((x: any, y: any) => new Date(y.date).getTime() - new Date(x.date).getTime()));
+      setBookings(
+        b.sort(
+          (x, y) =>
+            new Date(y.checkIn || y.createdAt).getTime() -
+            new Date(x.checkIn || x.createdAt).getTime()
+        )
+      );
+      setProductBookings(
+        pb.sort(
+          (x, y) =>
+            new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime()
+        )
+      );
+      setAppts(
+        a.sort((x, y) => new Date(y.date).getTime() - new Date(x.date).getTime())
+      );
     } finally {
       setLoading(false);
     }
@@ -60,19 +80,19 @@ export default function Dashboard() {
   }, []);
 
   const cancelStayBooking = async (id: string) => {
-    await client.entities.Booking.update(id, { status: "cancelled" });
+    await updateBooking(id, { status: "cancelled" });
     toast({ title: "Stay booking cancelled" });
     loadData();
   };
 
   const cancelProductBooking = async (id: string) => {
-    await client.entities.ProductBooking.update(id, { status: "cancelled" });
+    await updateProductBooking(id, { status: "cancelled" });
     toast({ title: "Reservation cancelled" });
     loadData();
   };
 
   const cancelAppt = async (id: string) => {
-    await client.entities.Appointment.update(id, { status: "cancelled" });
+    await updateAppointment(id, { status: "cancelled" });
     toast({ title: "Viewing cancelled" });
     loadData();
   };

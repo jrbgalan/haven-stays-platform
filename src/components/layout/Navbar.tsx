@@ -7,7 +7,7 @@ import {
   Palmtree, Waves, Mountain, Landmark, Utensils
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
-import { client } from "@/api/client";
+import { getConversations } from "@/services";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 
@@ -99,7 +99,7 @@ export default function Navbar() {
       return;
     }
     let cancelled = false;
-    client.entities.Conversation.filter({})
+    getConversations()
       .then((cs) => {
         if (!cancelled) {
           setUnreadMessages(cs.reduce((s, c) => s + (c.unreadByGuest || 0), 0));

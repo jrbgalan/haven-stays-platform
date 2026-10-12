@@ -12,6 +12,9 @@ export interface FilterState {
   bedrooms: number;
   minRating: number;
   amenities: string[];
+  freeCancellationOnly: boolean;
+  instantBookOnly: boolean;
+  verifiedOnly: boolean;
 
   // Activities
   activityCategory: string;
@@ -38,6 +41,9 @@ export const DEFAULT_FILTER_STATE: FilterState = {
   bedrooms: 0,
   minRating: 0,
   amenities: [],
+  freeCancellationOnly: false,
+  instantBookOnly: false,
+  verifiedOnly: false,
   activityCategory: "all",
   activityDuration: "all",
   vehicleType: "all",
@@ -254,6 +260,42 @@ export default function AdaptiveProductFilter({
                     </label>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Trust & Booking Policies */}
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Trust & Booking Policies
+              </label>
+              <div className="mt-2.5 space-y-2">
+                <label className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.verifiedOnly}
+                    onChange={(e) => update({ verifiedOnly: e.target.checked })}
+                    className="rounded accent-champagne"
+                  />
+                  <span className="font-medium">Haven Verified only</span>
+                </label>
+                <label className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.freeCancellationOnly}
+                    onChange={(e) => update({ freeCancellationOnly: e.target.checked })}
+                    className="rounded accent-champagne"
+                  />
+                  <span>Free cancellation</span>
+                </label>
+                <label className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.instantBookOnly}
+                    onChange={(e) => update({ instantBookOnly: e.target.checked })}
+                    className="rounded accent-champagne"
+                  />
+                  <span>Instant Book</span>
+                </label>
               </div>
             </div>
           </>

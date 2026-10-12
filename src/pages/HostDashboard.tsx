@@ -8,7 +8,17 @@ import {
   Sparkles, ShieldCheck, HeartHandshake, ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { client } from "@/api/client";
+import {
+  getListings,
+  createListing,
+  updateListing,
+  deleteListing,
+  getBookings,
+  updateBooking,
+  getAvailabilitySlots,
+  createAvailabilitySlot,
+  deleteAvailabilitySlot,
+} from "@/services";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import PageHero from "@/components/ui/PageHero";
@@ -169,11 +179,11 @@ export default function HostDashboard() {
     setLoading(true);
     try {
       const [l, b] = await Promise.all([
-        client.entities.Listing.list().catch(() => []),
-        client.entities.Booking.filter({}).catch(() => []),
+        getListings().catch(() => []),
+        getBookings().catch(() => []),
       ]);
       setListings(l);
-      setBookings(b.sort((x: any, y: any) => new Date(y.created_date).getTime() - new Date(x.created_date).getTime()));
+      setBookings(b.sort((x, y) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime()));
     } finally {
       setLoading(false);
     }
@@ -184,32 +194,32 @@ export default function HostDashboard() {
     return <HostLanding />;
   }
 
-  const saveListing = async (data) => {
+  const saveListing = async (data: any) => {
     try {
       if (editing) {
-        await client.entities.Listing.update(editing.id, data);
+        await updateListing(editing.id, data);
         toast({ title: "Listing updated" });
       } else {
-        await client.entities.Listing.create(data);
+        await createListing(data);
         toast({ title: "Listing created" });
       }
       setFormOpen(false);
       setEditing(null);
       load();
-    } catch (e) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } catch (e: any) {
+      toast({ title: "Error", description: e?.message || "Failed to save listing", variant: "destructive" });
     }
   };
 
-  const deleteListing = async (id) => {
+  const deleteListingItem = async (id: string) => {
     if (!confirm("Delete this listing?")) return;
-    await client.entities.Listing.delete(id);
+    await deleteListing(id);
     toast({ title: "Listing deleted" });
     load();
   };
 
-  const setBookingStatus = async (id, status) => {
-    await client.entities.Booking.update(id, { status });
+  const setBookingStatus = async (id: string, status: any) => {
+    await updateBooking(id, { status });
     toast({ title: `Booking ${status}` });
     load();
   };
@@ -240,7 +250,7 @@ export default function HostDashboard() {
         <div className="mt-8">
           {tab === "overview" && <Overview listings={listings} bookings={bookings} revenue={revenue} loading={loading} />}
           {tab === "listings" && (
-            <ListingsTab listings={listings} loading={loading} onAdd={() => { setEditing(null); setFormOpen(true); }} onEdit={(l) => { setEditing(l); setFormOpen(true); }} onDelete={deleteListing} />
+            <ListingsTab listings={listings} loading={loading} onAdd={() => { setEditing(null); setFormOpen(true); }} onEdit={(l) => { setEditing(l); setFormOpen(true); }} onDelete={deleteListingItem} />
           )}
           {tab === "bookings" && <BookingsTab bookings={bookings} listings={listings} loading={loading} onStatus={setBookingStatus} />}
           {tab === "availability" && <AvailabilityTab listings={listings} />}
@@ -399,11 +409,11 @@ function AvailabilityTab({ listings }) {
   const [blocked, setBlocked] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
-  const loadBlocked = async (id) => {
+  const loadBlocked = async (id: string) => {
     if (!id) return setBlocked([]);
     setLoadingSlots(true);
     try {
-      const slots = await client.entities.AvailabilitySlot.filter({ listingId: id });
+      const slots = await getAvailabilitySlots(id);
       setBlocked(slots);
     } catch { setBlocked([]); }
     setLoadingSlots(false);
@@ -412,14 +422,14 @@ function AvailabilityTab({ listings }) {
 
   const block = async () => {
     if (!listingId || !date || !slot) return;
-    const exists = blocked.some((s) => s.date === date && s.timeSlot === slot);
+    const exists = blocked.some((s: any) => s.date === date && s.timeSlot === slot);
     if (exists) { toast({ title: "Slot already blocked", variant: "destructive" }); return; }
-    await client.entities.AvailabilitySlot.create({ listingId, date, timeSlot: slot, isBooked: true });
+    await createAvailabilitySlot({ listingId, date, timeSlot: slot });
     toast({ title: "Slot blocked" });
     loadBlocked(listingId);
   };
-  const unblock = async (id) => {
-    await client.entities.AvailabilitySlot.delete(id);
+  const unblock = async (id: string) => {
+    await deleteAvailabilitySlot(id);
     toast({ title: "Slot unblocked" });
     loadBlocked(listingId);
   };

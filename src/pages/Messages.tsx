@@ -2,8 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageSquare, Search, Send, ArrowLeft, Calendar, Users } from "lucide-react";
-import { client } from "@/api/client";
+import {
+  getConversations,
+  getBookings,
+  getMessages,
+  updateConversation,
+  sendChatMessage,
+} from "@/services";
 import { useAuth } from "@/lib/AuthContext";
+import type { Conversation, Message, Booking } from "@/types/entities";
 import { useToast } from "@/components/ui/use-toast";
 import SmartImage from "@/components/ui/SmartImage";
 import { formatDate } from "@/lib/format";
@@ -24,16 +31,16 @@ function timeOf(d) {
 export default function Messages() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [conversations, setConversations] = useState([]);
-  const [activeId, setActiveId] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [typing, setTyping] = useState(false);
   const [query, setQuery] = useState("");
-  const [bookings, setBookings] = useState({});
-  const scrollRef = useRef(null);
+  const [bookings, setBookings] = useState<Record<string, Booking>>({});
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Start a conversation when arriving from a listing page (?listing=<id>)
@@ -42,13 +49,11 @@ export default function Messages() {
     if (!listingId || !user) return;
     (async () => {
       try {
-        const res = await client.functions.invoke("sendChatMessage", { listingId, text: "Hi! I'm interested in this stay." });
-        const d = res.data;
-        if (d?.error) throw new Error(d.error);
+        const d = await sendChatMessage(listingId, undefined, "Hi! I'm interested in this stay.");
         await loadAll();
         if (d?.conversationId) setActiveId(d.conversationId);
-      } catch (e) {
-        toast({ title: "Couldn't start conversation", description: e.message, variant: "destructive" });
+      } catch (e: any) {
+        toast({ title: "Couldn't start conversation", description: e?.message, variant: "destructive" });
       } finally {
         searchParams.delete("listing");
         setSearchParams(searchParams, { replace: true });
@@ -61,13 +66,13 @@ export default function Messages() {
     setLoading(true);
     try {
       const [list, bs] = await Promise.all([
-        client.entities.Conversation.filter({}).catch(() => []),
-        client.entities.Booking.filter({}).catch(() => []),
+        getConversations().catch(() => []),
+        getBookings().catch(() => []),
       ]);
-      list.sort((a: any, b: any) => new Date(b.lastMessageAt || b.created_date).getTime() - new Date(a.lastMessageAt || a.created_date).getTime());
+      list.sort((a, b) => new Date(b.lastMessageAt || b.createdAt).getTime() - new Date(a.lastMessageAt || a.createdAt).getTime());
       setConversations(list);
-      const byListing: Record<string, any> = {};
-      bs.forEach((b: any) => { if (!byListing[b.listingId]) byListing[b.listingId] = b; });
+      const byListing: Record<string, Booking> = {};
+      bs.forEach((b) => { if (!byListing[b.listingId]) byListing[b.listingId] = b; });
       setBookings(byListing);
       if (list.length && !activeId) setActiveId(list[0].id);
     } finally {
@@ -76,16 +81,16 @@ export default function Messages() {
   };
   useEffect(() => { loadAll(); }, []);
 
-  const active = conversations.find((c: any) => c.id === activeId);
+  const active = conversations.find((c) => c.id === activeId);
 
   const loadMessages = async (id: string) => {
-    const msgs = await client.entities.Message.filter({ conversationId: id }).catch(() => []);
-    msgs.sort((a: any, b: any) => new Date(a.created_date).getTime() - new Date(b.created_date).getTime());
+    const msgs = await getMessages(id).catch(() => []);
+    msgs.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     setMessages(msgs);
-    const conv = conversations.find((c: any) => c.id === id);
+    const conv = conversations.find((c) => c.id === id);
     if (conv && (conv.unreadByGuest || 0) > 0) {
-      client.entities.Conversation.update(id, { unreadByGuest: 0 }).then(() => {
-        setConversations((cs: any[]) => cs.map((c) => (c.id === id ? { ...c, unreadByGuest: 0 } : c)));
+      updateConversation(id, { unreadByGuest: 0 }).then(() => {
+        setConversations((cs) => cs.map((c) => (c.id === id ? { ...c, unreadByGuest: 0 } : c)));
       }).catch(() => {});
     }
   };
@@ -101,16 +106,10 @@ export default function Messages() {
     setText("");
     setSending(true);
     setTyping(true);
-    const temp = { id: "tmp-" + Date.now(), text: content, senderId: user.id, created_date: new Date().toISOString() };
+    const temp: Message = { id: "tmp-" + Date.now(), text: content, senderId: user?.id || "guest", conversationId: active.id, createdAt: new Date().toISOString() };
     setMessages((m) => [...m, temp]);
     try {
-      const res = await client.functions.invoke("sendChatMessage", {
-        conversationId: active.id,
-        listingId: active.listingId,
-        text: content,
-      });
-      const data = res.data;
-      if (data?.error) throw new Error(data.error);
+      const data = await sendChatMessage(active.listingId, active.id, content);
       setMessages((m) => [...m.filter((x) => x.id !== temp.id), data.userMessage, data.hostMessage].filter(Boolean));
       setConversations((cs) => cs.map((c) => (c.id === active.id ? { ...c, lastMessage: data.hostMessage?.text || c.lastMessage, lastMessageAt: new Date().toISOString(), unreadByGuest: 0 } : c)));
     } catch (e) {
@@ -212,7 +211,7 @@ export default function Messages() {
                       <div key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
                         <div className={cn("max-w-[78%] rounded-2xl px-3.5 py-2.5 text-sm", mine ? "rounded-br-sm bg-foreground text-background" : "rounded-bl-sm bg-secondary text-foreground/90")}>
                           <p className="leading-relaxed">{m.text}</p>
-                          <p className={cn("mt-1 text-[10px]", mine ? "text-background/60" : "text-muted-foreground")}>{timeOf(m.created_date)}</p>
+                          <p className={cn("mt-1 text-[10px]", mine ? "text-background/60" : "text-muted-foreground")}>{timeOf(m.createdAt || (m as any).created_date)}</p>
                         </div>
                       </div>
                     );

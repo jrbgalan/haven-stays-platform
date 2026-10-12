@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { UtensilsCrossed, Camera, Trees, Wine, Gem } from "lucide-react";
-import { client } from "@/api/client";
+import { getPlaces } from "@/services";
 import SectionReveal from "@/components/ui/SectionReveal";
 import PlaceCard from "./PlaceCard";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,7 @@ export default function AroundThisStay({ listingId }) {
 
   useEffect(() => {
     setLoading(true);
-    client.entities.Place.filter({ listingId })
+    getPlaces(listingId)
       .then(setPlaces)
       .catch(() => setPlaces([]))
       .finally(() => setLoading(false));

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ArrowRight, ArrowLeft, Calendar, Users, Home, PartyPopper, Copy, ShieldCheck } from "lucide-react";
-import { client } from "@/api/client";
+import { getListingById, getAvailability, createBooking, createProductBooking } from "@/services";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import DateRangePicker from "@/components/booking/DateRangePicker";
@@ -46,9 +46,10 @@ export default function BookingFlow() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    if (!id) return;
     Promise.all([
-      client.entities.Listing.get(id as string).catch(() => null),
-      client.functions.invoke("getAvailability", { listingId: id }).then((r) => r.data).catch(() => ({ bookedRanges: [] })),
+      getListingById(id as string).catch(() => null),
+      getAvailability(id as string).catch(() => ({ bookedRanges: [], bookedSlots: [] })),
     ]).then(([l, avail]) => {
       setListing(l);
       setBookedRanges(avail?.bookedRanges || []);
@@ -134,12 +135,12 @@ export default function BookingFlow() {
         payload.nightlyPrice = (listing as any).pricePerNight;
       }
 
-      const res = await client.functions.invoke("createBooking", payload);
-      const booking = res.data?.booking;
-      if (!booking) throw new Error(res.data?.error || "Booking failed");
+      const booking = await createBooking(payload);
+      if (!booking) throw new Error("Booking failed");
 
       // Also register in ProductBooking for unified trips
-      await client.entities.ProductBooking.create({
+      await createProductBooking({
+        userId: user?.id,
         productType: isDayUse ? "day_use" : "overnight",
         itemId: id as string,
         itemTitle: (listing as any).title,

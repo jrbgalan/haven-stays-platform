@@ -6,7 +6,7 @@ import PageHero from "@/components/ui/PageHero";
 import SectionReveal from "@/components/ui/SectionReveal";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/lib/AuthContext";
-import { client } from "@/api/client";
+import { getBookings, createConciergeRequest } from "@/services";
 import { GEN_IMAGES } from "@/lib/constants";
 import { generateReference } from "@/lib/format";
 
@@ -32,25 +32,25 @@ export default function Concierge() {
 
   React.useEffect(() => {
     if (!user) return;
-    client.entities.Booking.filter({}).then(setBookings).catch(() => {});
+    getBookings().then(setBookings).catch(() => {});
   }, [user]);
 
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
 
-  const submit = async (e) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) { toast({ title: "Please sign in", description: "You need an account to request concierge services.", variant: "destructive" }); return; }
     setSubmitting(true);
     try {
       const reference = generateReference("CN");
-      await client.entities.ConciergeRequest.create({
+      await createConciergeRequest({
         userId: user.id,
-        bookingId: form.bookingId || null,
-        serviceType: form.serviceType,
-        date: form.date || null,
-        guests: Number(form.guests) || 1,
+        bookingId: form.bookingId || undefined,
+        requestType: form.serviceType,
+        destination: form.notes,
+        dates: form.date || undefined,
+        partySize: Number(form.guests) || 1,
         notes: form.notes,
-        contact: form.contact,
       });
       setRef(reference);
     } catch (err) {

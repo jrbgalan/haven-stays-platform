@@ -6,6 +6,7 @@ export interface Listing {
   city: string;
   country: string;
   pricePerNight: number;
+  originalPricePerNight?: number;
   images?: string[];
   amenities?: string[];
   category: 'Beachfront' | 'Cabins' | 'Villas' | 'City' | 'Countryside' | string;
@@ -17,9 +18,17 @@ export interface Listing {
   bathrooms?: number;
   maxGuests?: number;
   rating?: number;
+  reviewCount?: number;
   hostName?: string;
   featured?: boolean;
+  isVerified?: boolean;
+  freeCancellation?: boolean;
+  instantBookable?: boolean;
+  bookedThisMonth?: number;
+  remainingUnits?: number;
+  cleaningFee?: number;
+  serviceFee?: number;
+  taxes?: number;
   createdAt?: string;
   updatedAt?: string;
 }
-

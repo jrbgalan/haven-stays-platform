@@ -21,12 +21,33 @@ export function enrichListings(listings: Listing[]): Listing[] {
     const dayUsePricePerBlock = Math.round(l.pricePerNight * 0.45);
     const dayUseTimeSlots = ["09:00 - 17:00", "12:00 - 20:00", "14:00 - 22:00"];
 
+    // Trust & social proof enrichment
+    const isVerified = index % 5 !== 3; // ~80% verified
+    const hasDiscount = index % 3 === 0;
+    const originalPricePerNight = hasDiscount ? Math.round(l.pricePerNight * 1.14) : undefined;
+    const freeCancellation = index % 4 !== 3;
+    const instantBookable = index % 5 !== 4;
+    const bookedThisMonth = 8 + ((index * 5 + 3) % 16);
+    const remainingUnits = index % 3 === 0 ? 2 : index % 3 === 1 ? 3 : 5;
+    const cleaningFee = Math.round(l.pricePerNight * 0.12);
+    const serviceFee = Math.round(l.pricePerNight * 0.08);
+    const taxes = Math.round(l.pricePerNight * 0.06);
+
     return {
       ...l,
       propertyType,
       stayType,
       dayUsePricePerBlock,
       dayUseTimeSlots,
+      isVerified,
+      originalPricePerNight,
+      freeCancellation,
+      instantBookable,
+      bookedThisMonth,
+      remainingUnits,
+      cleaningFee,
+      serviceFee,
+      taxes,
     };
   });
 }

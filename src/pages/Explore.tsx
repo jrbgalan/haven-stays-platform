@@ -2,11 +2,18 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  SlidersHorizontal, LayoutGrid, List, Search, X
+  SlidersHorizontal, LayoutGrid, List, Search, X, Scale, Sparkles, Check, ArrowRight
 } from "lucide-react";
-import { client } from "@/api/client";
+import {
+  getListings,
+  getActivities,
+  getTransfers,
+  getFlights,
+  getPackages,
+} from "@/services";
 import ListingCard from "@/components/listings/ListingCard";
 import SmartSearch from "@/components/ai/SmartSearch";
+import CompareDrawer from "@/components/listings/CompareDrawer";
 import { PRODUCT_TABS } from "@/components/search/MultiProductSearchBar";
 import AdaptiveProductFilter, { FilterState, DEFAULT_FILTER_STATE } from "@/components/search/AdaptiveProductFilter";
 import {
@@ -78,22 +85,40 @@ export default function Explore() {
     return s;
   });
 
-  // Fetch all product data on mount
+  // Price Transparency & Comparison State
+  const [showTotalPrice, setShowTotalPrice] = useState(false);
+  const [comparingListings, setComparingListings] = useState<Listing[]>([]);
+  const [compareDrawerOpen, setCompareDrawerOpen] = useState(false);
+
+  const handleToggleCompare = (listing: Listing) => {
+    setComparingListings((prev) => {
+      const exists = prev.some((l) => l.id === listing.id);
+      if (exists) {
+        return prev.filter((l) => l.id !== listing.id);
+      }
+      if (prev.length >= 3) {
+        return [...prev.slice(1), listing];
+      }
+      return [...prev, listing];
+    });
+  };
+
+  // Fetch all product data on mount using typed service layer
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      client.entities.Listing.list().catch(() => []),
-      client.entities.Activity.list().catch(() => []),
-      client.entities.Transfer.list().catch(() => []),
-      client.entities.Flight.list().catch(() => []),
-      client.entities.Package.list().catch(() => []),
+      getListings().catch(() => []),
+      getActivities().catch(() => []),
+      getTransfers().catch(() => []),
+      getFlights().catch(() => []),
+      getPackages().catch(() => []),
     ])
       .then(([ls, acts, trs, fls, pks]) => {
-        setListings(ls as Listing[]);
-        setActivities(acts as Activity[]);
-        setTransfers(trs as Transfer[]);
-        setFlights(fls as Flight[]);
-        setBundles(pks as HotelFlightBundle[]);
+        setListings(ls);
+        setActivities(acts);
+        setTransfers(trs);
+        setFlights(fls);
+        setBundles(pks);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -161,19 +186,44 @@ export default function Explore() {
         );
       }
 
+      // Trust & Policy filters
+      if (filters.freeCancellationOnly) {
+        r = r.filter((l) => l.freeCancellation);
+      }
+      if (filters.instantBookOnly) {
+        r = r.filter((l) => l.instantBookable);
+      }
+      if (filters.verifiedOnly) {
+        r = r.filter((l) => l.isVerified);
+      }
+
       // Sort
       if (sort === "price_asc") {
-        r.sort((a, b) =>
-          productType === "day_use"
-            ? (a.dayUsePricePerBlock || 0) - (b.dayUsePricePerBlock || 0)
-            : a.pricePerNight - b.pricePerNight
-        );
+        r.sort((a, b) => {
+          if (productType === "day_use") {
+            return (a.dayUsePricePerBlock || 0) - (b.dayUsePricePerBlock || 0);
+          }
+          const priceA = showTotalPrice
+            ? a.pricePerNight + (a.cleaningFee || 0) + (a.serviceFee || 0) + (a.taxes || 0)
+            : a.pricePerNight;
+          const priceB = showTotalPrice
+            ? b.pricePerNight + (b.cleaningFee || 0) + (b.serviceFee || 0) + (b.taxes || 0)
+            : b.pricePerNight;
+          return priceA - priceB;
+        });
       } else if (sort === "price_desc") {
-        r.sort((a, b) =>
-          productType === "day_use"
-            ? (b.dayUsePricePerBlock || 0) - (a.dayUsePricePerBlock || 0)
-            : b.pricePerNight - a.pricePerNight
-        );
+        r.sort((a, b) => {
+          if (productType === "day_use") {
+            return (b.dayUsePricePerBlock || 0) - (a.dayUsePricePerBlock || 0);
+          }
+          const priceA = showTotalPrice
+            ? a.pricePerNight + (a.cleaningFee || 0) + (a.serviceFee || 0) + (a.taxes || 0)
+            : a.pricePerNight;
+          const priceB = showTotalPrice
+            ? b.pricePerNight + (b.cleaningFee || 0) + (b.serviceFee || 0) + (b.taxes || 0)
+            : b.pricePerNight;
+          return priceB - priceA;
+        });
       } else if (sort === "rating") {
         r.sort((a, b) => (b.rating || 0) - (a.rating || 0));
       }
@@ -445,6 +495,24 @@ export default function Explore() {
               ))}
             </select>
 
+            {/* Total price transparency toggle */}
+            {["hotels", "homes", "overnight"].includes(productType) && (
+              <label
+                className="hidden sm:flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2 text-xs font-medium cursor-pointer transition-colors hover:bg-secondary select-none"
+                title="Toggle between nightly rate and all-inclusive total including taxes and cleaning fees"
+              >
+                <input
+                  type="checkbox"
+                  checked={showTotalPrice}
+                  onChange={(e) => setShowTotalPrice(e.target.checked)}
+                  className="rounded accent-champagne cursor-pointer"
+                />
+                <span className={showTotalPrice ? "font-semibold text-foreground" : "text-muted-foreground"}>
+                  Total with fees
+                </span>
+              </label>
+            )}
+
             {/* View Grid/List toggle (stays only) */}
             {["hotels", "homes", "overnight"].includes(productType) && (
               <div className="hidden sm:flex rounded-full border border-border p-1 bg-card">
@@ -472,6 +540,61 @@ export default function Explore() {
             )}
           </div>
         </div>
+
+        {/* Quick Trust Filter Chips */}
+        {["hotels", "homes", "overnight"].includes(productType) && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground mr-1">Quick filters:</span>
+            <button
+              type="button"
+              onClick={() => setFilters((prev) => ({ ...prev, verifiedOnly: !prev.verifiedOnly }))}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all border",
+                filters.verifiedOnly
+                  ? "border-champagne bg-champagne/15 text-foreground font-semibold shadow-sm"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Sparkles size={12} className={filters.verifiedOnly ? "text-champagne-dark dark:text-champagne-light" : ""} />
+              Haven Verified
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilters((prev) => ({ ...prev, freeCancellationOnly: !prev.freeCancellationOnly }))}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all border",
+                filters.freeCancellationOnly
+                  ? "border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold shadow-sm"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Check size={12} />
+              Free Cancellation
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilters((prev) => ({ ...prev, instantBookOnly: !prev.instantBookOnly }))}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all border",
+                filters.instantBookOnly
+                  ? "border-foreground bg-foreground text-background font-semibold shadow-sm"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Instant Book
+            </button>
+            {comparingListings.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setCompareDrawerOpen(true)}
+                className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-champagne bg-champagne text-black px-3.5 py-1 text-xs font-semibold shadow-sm animate-fade-in"
+              >
+                <Scale size={12} />
+                Compare ({comparingListings.length}/3)
+              </button>
+            )}
+          </div>
+        )}
 
         {/* AI Smart Search banner (for stays) */}
         {["hotels", "homes", "overnight"].includes(productType) && (
@@ -523,23 +646,63 @@ export default function Explore() {
             ))}
           </div>
         ) : results.items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border py-20 text-center">
-            <Search size={32} className="text-muted-foreground" strokeWidth={1.5} />
-            <h3 className="mt-4 font-heading text-xl font-medium text-foreground">
-              No results match your criteria
-            </h3>
-            <p className="mt-1 text-sm text-muted-foreground max-w-sm">
-              Try adjusting your search location, dates, or clearing your active filters.
-            </p>
-            <button
-              onClick={() => {
-                setFilters(DEFAULT_FILTER_STATE);
-                setSearchQuery("");
-              }}
-              className="mt-6 rounded-full bg-foreground px-5 py-2.5 text-xs font-semibold text-background"
-            >
-              Reset All Filters
-            </button>
+          <div className="space-y-12">
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border py-16 text-center bg-card/30">
+              <Search size={32} className="text-muted-foreground" strokeWidth={1.5} />
+              <h3 className="mt-4 font-heading text-xl font-medium text-foreground">
+                No results match your criteria
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground max-w-sm">
+                Try adjusting your search location, dates, or clearing your active filters.
+              </p>
+              <button
+                onClick={() => {
+                  setFilters(DEFAULT_FILTER_STATE);
+                  setSearchQuery("");
+                }}
+                className="mt-6 rounded-full bg-foreground px-5 py-2.5 text-xs font-semibold text-background hover:opacity-90 transition-opacity"
+              >
+                Reset All Filters
+              </button>
+            </div>
+
+            {/* "No results? Try these instead" Suggestion Row */}
+            {listings.length > 0 && (
+              <div>
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-champagne">
+                      Curated Alternatives
+                    </span>
+                    <h3 className="font-heading text-2xl font-medium text-foreground">
+                      No results? Try these instead
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setFilters(DEFAULT_FILTER_STATE);
+                      setSearchQuery("");
+                    }}
+                    className="text-xs font-semibold text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                  >
+                    View all stays <ArrowRight size={12} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {listings.slice(0, 3).map((listing, i) => (
+                    <ListingCard
+                      key={`suggested-${listing.id}`}
+                      listing={listing}
+                      index={i}
+                      showTotalPrice={showTotalPrice}
+                      isComparing={comparingListings.some((l) => l.id === listing.id)}
+                      onToggleCompare={handleToggleCompare}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div>
@@ -553,7 +716,14 @@ export default function Explore() {
                 }
               >
                 {(results.items as Listing[]).map((listing, i) => (
-                  <ListingCard key={listing.id} listing={listing} index={i} />
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    index={i}
+                    showTotalPrice={showTotalPrice}
+                    isComparing={comparingListings.some((l) => l.id === listing.id)}
+                    onToggleCompare={handleToggleCompare}
+                  />
                 ))}
               </div>
             )}
@@ -661,6 +831,50 @@ export default function Explore() {
         isOpen={bookingModalOpen}
         onClose={() => setBookingModalOpen(false)}
         data={selectedBookingItem}
+      />
+
+      {/* FLOATING COMPARE BAR */}
+      {comparingListings.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-full border border-border/80 bg-card/95 px-4 py-2.5 shadow-2xl backdrop-blur-xl animate-fade-up">
+          <div className="flex -space-x-2">
+            {comparingListings.map((l) => (
+              <img
+                key={l.id}
+                src={(l.images || [])[0]}
+                alt={l.title}
+                className="h-7 w-7 rounded-full object-cover ring-2 ring-background"
+              />
+            ))}
+          </div>
+          <span className="text-xs font-semibold text-foreground">
+            {comparingListings.length} of 3 selected
+          </span>
+          <button
+            onClick={() => setCompareDrawerOpen(true)}
+            className="rounded-full bg-foreground px-3.5 py-1 text-xs font-semibold text-background hover:opacity-90 transition-opacity"
+          >
+            Compare Now
+          </button>
+          <button
+            onClick={() => setComparingListings([])}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* SIDE-BY-SIDE COMPARISON DRAWER */}
+      <CompareDrawer
+        isOpen={compareDrawerOpen}
+        onClose={() => setCompareDrawerOpen(false)}
+        selectedListings={comparingListings}
+        onRemove={(id) => setComparingListings((prev) => prev.filter((l) => l.id !== id))}
+        onClear={() => {
+          setComparingListings([]);
+          setCompareDrawerOpen(false);
+        }}
+        showTotalPrice={showTotalPrice}
       />
     </div>
   );

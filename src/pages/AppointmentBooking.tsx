@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Video, MapPin, Clock, Check, ArrowLeft, PartyPopper, User, Mail, Phone, MessageSquare } from "lucide-react";
-import { client } from "@/api/client";
+import { getListingById, getAvailability, createAppointment } from "@/services";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import SmartImage from "@/components/ui/SmartImage";
@@ -35,9 +35,10 @@ export default function AppointmentBooking() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    if (!id) return;
     Promise.all([
-      client.entities.Listing.get(id).catch(() => null),
-      client.functions.invoke("getAvailability", { listingId: id }).then((r) => r.data).catch(() => ({ bookedSlots: [] })),
+      getListingById(id).catch(() => null),
+      getAvailability(id).catch(() => ({ bookedRanges: [], bookedSlots: [] })),
     ]).then(([l, avail]) => {
       setListing(l);
       setBookedSlots(avail?.bookedSlots || []);
@@ -63,15 +64,16 @@ export default function AppointmentBooking() {
     setSubmitting(true);
     setError("");
     try {
-      const res = await client.functions.invoke("bookAppointment", {
-        listingId: id,
-        listingTitle: listing.title,
-        listingImage: listing.images?.[0],
-        type, date, timeSlot: slot,
-        name: form.name, email: form.email, phone: form.phone, notes: form.notes,
+      const appt = await createAppointment({
+        listingId: id as string,
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        date,
+        timeSlot: slot,
+        note: form.notes,
       });
-      const appt = res.data?.appointment;
-      if (!appt) throw new Error(res.data?.error || "Scheduling failed");
+      if (!appt) throw new Error("Scheduling failed");
       setConfirmed(appt);
       toast({ title: "Viewing scheduled", description: `Reference ${appt.reference}` });
     } catch (e) {

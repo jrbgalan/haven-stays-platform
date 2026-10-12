@@ -127,6 +127,94 @@ export default function About() {
         </div>
       </section>
 
+      {/* Architecture section */}
+      <section className="border-t border-border bg-gradient-to-b from-card/60 via-card to-background py-20">
+        <div className="mx-auto max-w-5xl px-5 sm:px-8">
+          <SectionReveal>
+            <div className="flex items-center gap-2">
+              <span className="h-px w-6 bg-champagne" />
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne">Engineering Foundation</p>
+            </div>
+            <h2 className="mt-3 font-heading text-3xl font-medium tracking-tight sm:text-4xl">
+              Clean Architecture & Modular Data-Access
+            </h2>
+            <p className="mt-3 max-w-2xl text-base text-muted-foreground">
+              Haven is engineered with a layered, contract-driven architecture designed to withstand scale and allow seamless API swapping without touching a single component.
+            </p>
+          </SectionReveal>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <SectionReveal delay={0.05}>
+              <div className="flex h-full flex-col justify-between rounded-2xl border border-border/80 bg-background/80 p-6 shadow-sm">
+                <div>
+                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark">
+                    Layer 1
+                  </span>
+                  <h3 className="mt-3 font-heading text-lg font-medium">UI Presentation</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    React 18, TypeScript, Tailwind CSS, and Framer Motion. Zero layout shift, fluid clamp typography, responsive product tabs, and accessible micro-interactions.
+                  </p>
+                </div>
+                <div className="mt-4 border-t border-border/60 pt-3 text-[11px] font-mono text-muted-foreground">
+                  src/components & src/pages
+                </div>
+              </div>
+            </SectionReveal>
+
+            <SectionReveal delay={0.1}>
+              <div className="flex h-full flex-col justify-between rounded-2xl border border-border/80 bg-background/80 p-6 shadow-sm">
+                <div>
+                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark">
+                    Layer 2
+                  </span>
+                  <h3 className="mt-3 font-heading text-lg font-medium">Data-Access Facade</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    Centralized typed services (<code>getListings</code>, <code>searchListings</code>, <code>createBooking</code>). Isolates business logic from view logic with complete DTO typing and zero <code>any</code>.
+                  </p>
+                </div>
+                <div className="mt-4 border-t border-border/60 pt-3 text-[11px] font-mono text-muted-foreground">
+                  src/services/stayService.ts
+                </div>
+              </div>
+            </SectionReveal>
+
+            <SectionReveal delay={0.15}>
+              <div className="flex h-full flex-col justify-between rounded-2xl border border-border/80 bg-background/80 p-6 shadow-sm">
+                <div>
+                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark">
+                    Layer 3
+                  </span>
+                  <h3 className="mt-3 font-heading text-lg font-medium">Provider Contract</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    <code>StayProvider</code> abstraction allows switching from local persistence (<code>Base44StayProvider</code>) to live production REST/GraphQL gateways without modifying the UI layer.
+                  </p>
+                </div>
+                <div className="mt-4 border-t border-border/60 pt-3 text-[11px] font-mono text-muted-foreground">
+                  src/services/provider.ts
+                </div>
+              </div>
+            </SectionReveal>
+
+            <SectionReveal delay={0.2}>
+              <div className="flex h-full flex-col justify-between rounded-2xl border border-border/80 bg-background/80 p-6 shadow-sm">
+                <div>
+                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark">
+                    Layer 4
+                  </span>
+                  <h3 className="mt-3 font-heading text-lg font-medium">Cache & Resilience</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    In-memory TTL cache with key invalidation on mutation, coupled with <code>withRetry</code> exponential backoff to handle transient network blips transparently.
+                  </p>
+                </div>
+                <div className="mt-4 border-t border-border/60 pt-3 text-[11px] font-mono text-muted-foreground">
+                  src/services/cache.ts & errors.ts
+                </div>
+              </div>
+            </SectionReveal>
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-border bg-foreground text-background">
         <div className="mx-auto max-w-5xl px-5 py-16 text-center sm:px-8">
           <SectionReveal>

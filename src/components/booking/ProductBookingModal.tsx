@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { X, Check, Copy, ShieldCheck } from "lucide-react";
-import { client } from "@/api/client";
+import { createProductBooking } from "@/services";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { formatCurrency } from "@/lib/format";
@@ -51,7 +51,7 @@ export default function ProductBookingModal({
   const handleConfirm = async () => {
     setSubmitting(true);
     try {
-      const res = await client.entities.ProductBooking.create({
+      const res = await createProductBooking({
         userId: user?.id || "guest",
         productType: data.productType,
         itemId: data.itemId,

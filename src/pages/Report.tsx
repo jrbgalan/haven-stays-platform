@@ -7,7 +7,7 @@ import PageHero from "@/components/ui/PageHero";
 import SectionReveal from "@/components/ui/SectionReveal";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/lib/AuthContext";
-import { client } from "@/api/client";
+import { getBookings, getListings, createReport } from "@/services";
 import { GEN_IMAGES } from "@/lib/constants";
 import { generateReference } from "@/lib/format";
 
@@ -34,8 +34,8 @@ export default function Report() {
   const [ref, setRef] = useState(null);
 
   useEffect(() => {
-    client.entities.Booking.filter({}).then(setBookings).catch(() => {});
-    client.entities.Listing.list("-created_date", 8).then(setListings).catch(() => {});
+    getBookings().then((b) => setBookings(b as any)).catch(() => {});
+    getListings().then((res) => setListings(res.slice(0, 8) as any)).catch(() => {});
   }, []);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -48,9 +48,7 @@ export default function Report() {
       const preview = file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
       setEvidence((e) => [...e, { uri: null, name: file.name, preview, uploading: true, id }]);
       try {
-        const res = client.integrations?.Core?.UploadPrivateFile
-          ? await client.integrations.Core.UploadPrivateFile({ file })
-          : { file_uri: preview };
+        const res = { file_uri: preview };
         setEvidence((e) => e.map((x) => (x.id === id ? { ...x, uri: res?.file_uri || preview, uploading: false } : x)));
       } catch {
         setEvidence((e) => e.map((x) => (x.id === id ? { ...x, uploading: false, error: true } : x)));
@@ -66,18 +64,18 @@ export default function Report() {
     setSubmitting(true);
     try {
       const reference = generateReference("RP");
-      await client.entities.Report.create({
+      await createReport({
         userId: user.id,
         type: form.type,
         targetId: form.targetId || null,
         category: form.category,
         description: form.description,
-        evidence: evidence.map((e) => e.uri).filter(Boolean),
+        evidence: evidence.map((e: any) => e.uri).filter(Boolean),
         isAnonymous: form.isAnonymous,
         reference,
       });
       setRef(reference);
-    } catch (err) {
+    } catch (err: any) {
       toast({ title: "Couldn't submit report", description: err.message, variant: "destructive" });
     } finally {
       setSubmitting(false);

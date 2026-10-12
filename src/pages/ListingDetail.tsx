@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Star, MapPin, Bath, ArrowLeft, ChevronRight, CalendarCheck, Wifi, ShieldCheck, Award, MessageSquare } from "lucide-react";
-import { client } from "@/api/client";
+import { Star, MapPin, Bath, ArrowLeft, ChevronRight, CalendarCheck, Wifi, ShieldCheck, Award, MessageSquare, Flame } from "lucide-react";
+import { getListingById, getReviews, getAvailability } from "@/services";
+import VerifiedBadge from "@/components/listings/VerifiedBadge";
+import ShareButton from "@/components/listings/ShareButton";
+import RecentlyViewed, { trackRecentlyViewed } from "@/components/listings/RecentlyViewed";
 import SmartImage from "@/components/ui/SmartImage";
 import StarRating from "@/components/ui/StarRating";
 import SaveButton from "@/components/listings/SaveButton";
@@ -37,16 +40,18 @@ export default function ListingDetail() {
   const [dayUseTimeSlot, setDayUseTimeSlot] = useState("09:00 - 17:00");
 
   useEffect(() => {
+    if (!id) return;
     setLoading(true);
     Promise.all([
-      client.entities.Listing.get(id).catch(() => null),
-      client.entities.Review.filter({ listingId: id }).catch(() => []),
-      client.functions.invoke("getAvailability", { listingId: id }).then((r) => r.data).catch(() => ({ bookedRanges: [] })),
+      getListingById(id).catch(() => null),
+      getReviews(id).catch(() => []),
+      getAvailability(id).catch(() => ({ bookedRanges: [], bookedSlots: [] })),
     ]).then(([l, revs, avail]) => {
       setListing(l);
       setReviews(revs || []);
       setBookedRanges(avail?.bookedRanges || []);
       setLoading(false);
+      trackRecentlyViewed(id);
     });
   }, [id]);
 
@@ -107,13 +112,27 @@ export default function ListingDetail() {
       <div className="mx-auto max-w-7xl px-5 pt-5 sm:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">{listing.title}</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">{listing.title}</h1>
+              {listing.isVerified && <VerifiedBadge size="md" />}
+            </div>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
               <span className="flex items-center gap-1"><Star size={13} className="fill-accent text-accent" /> {avgRating} · {reviews.length} reviews</span>
               <span className="flex items-center gap-1"><MapPin size={13} /> {listing.location}, {listing.country}</span>
+              {listing.bookedThisMonth && (
+                <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium text-xs">
+                  <Flame size={13} /> Booked {listing.bookedThisMonth} times this month
+                </span>
+              )}
+              {listing.remainingUnits && listing.remainingUnits <= 3 && (
+                <span className="text-rose-600 dark:text-rose-400 font-semibold text-xs">
+                  Only {listing.remainingUnits} left on your dates
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ShareButton title={listing.title} className="border border-border" size={17} />
             <SaveButton listingId={id} className="border border-border" />
             <button
               onClick={() => navigate(`/messages?listing=${id}`)}
@@ -267,6 +286,9 @@ export default function ListingDetail() {
 
           {/* Similar stays */}
           <SimilarStays listing={listing} />
+
+          {/* Recently viewed row */}
+          <RecentlyViewed currentListingId={id} />
         </div>
 
         {/* Booking card (desktop sticky) */}

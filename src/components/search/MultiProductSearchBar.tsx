@@ -173,7 +173,7 @@ export default function MultiProductSearchBar({
   return (
     <div className={cn("w-full transition-all duration-300", className)}>
       {/* 1. HORIZONTALLY SCROLLABLE PRODUCT TABS WITH SLIDING INDICATOR */}
-      <div className="relative mb-3 flex items-center overflow-x-auto no-scrollbar rounded-full border border-border/80 bg-background/85 p-1.5 shadow-luxe backdrop-blur-xl">
+      <div className="relative mb-3 flex items-center overflow-x-auto no-scrollbar rounded-full border border-border/80 bg-background/85 p-1.5 shadow-luxe backdrop-blur-xl touch-pan-x snap-x scroll-smooth">
         <div className="flex items-center gap-1 min-w-max px-1">
           {PRODUCT_TABS.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -184,7 +184,7 @@ export default function MultiProductSearchBar({
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "relative flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium transition-colors duration-200 outline-none select-none sm:text-sm",
+                  "relative flex shrink-0 snap-start items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium transition-colors duration-200 outline-none select-none sm:px-4 sm:text-sm",
                   isActive
                     ? "text-background font-semibold"
                     : "text-foreground/70 hover:text-foreground hover:bg-secondary/60"

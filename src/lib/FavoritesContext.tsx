@@ -1,12 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { client } from "@/api/client";
 import { useAuth } from "@/lib/AuthContext";
+import { getFavorites, createFavorite, deleteFavorite } from "@/services";
+import type { Favorite } from "@/types/entities";
 
-export interface FavoriteItem {
-  id: string;
-  listingId: string;
-  [key: string]: any;
-}
+export type FavoriteItem = Favorite;
 
 export interface FavoritesContextType {
   favorites: FavoriteItem[];
@@ -30,9 +27,9 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      const favs = await client.entities.Favorite.filter({});
+      const favs = await getFavorites();
       setFavorites(favs);
-    } catch (e) {
+    } catch {
       setFavorites([]);
     } finally {
       setLoading(false);
@@ -44,20 +41,20 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   }, [load]);
 
   const isFavorited = useCallback(
-    (listingId) => favorites.some((f) => f.listingId === listingId),
+    (listingId: string) => favorites.some((f) => f.listingId === listingId),
     [favorites]
   );
 
   const toggle = useCallback(
-    async (listingId) => {
+    async (listingId: string) => {
       if (!isAuthenticated) return { needsAuth: true };
       const existing = favorites.find((f) => f.listingId === listingId);
       if (existing) {
-        await client.entities.Favorite.delete(existing.id);
+        await deleteFavorite(existing.id);
         setFavorites((prev) => prev.filter((f) => f.id !== existing.id));
         return { needsAuth: false, favorited: false };
       } else {
-        const created = await client.entities.Favorite.create({ listingId });
+        const created = await createFavorite(listingId);
         setFavorites((prev) => [...prev, created]);
         return { needsAuth: false, favorited: true };
       }

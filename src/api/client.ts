@@ -43,9 +43,9 @@ const ENRICHED_CURATED_LISTINGS = enrichListings(CURATED_LISTINGS);
 if (!localStorage.getItem(KEY_LISTINGS)) {
   save(KEY_LISTINGS, ENRICHED_CURATED_LISTINGS);
 } else {
-  // Ensure existing stored listings also get enriched if missing propertyType
+  // Ensure existing stored listings also get enriched if missing propertyType or isVerified
   const existing = load<Listing[]>(KEY_LISTINGS, []);
-  if (existing.length > 0 && !existing[0].propertyType) {
+  if (existing.length > 0 && (!existing[0].propertyType || existing[0].isVerified === undefined)) {
     save(KEY_LISTINGS, enrichListings(existing));
   }
 }
@@ -383,6 +383,20 @@ export const client = {
         save('haven_availability_slots', stored.filter((s) => s.id !== id));
         return { success: true };
       },
+    },
+
+    Subscriber: {
+      create: async (data: { email: string; source?: string }) => {
+        const stored = load<any[]>('haven_subscribers', []);
+        const item = {
+          ...data,
+          id: 'sub-' + Date.now(),
+          subscribedAt: new Date().toISOString(),
+        };
+        save('haven_subscribers', [item, ...stored]);
+        return item;
+      },
+      list: async () => load<any[]>('haven_subscribers', []),
     },
 
     ProductBooking: {

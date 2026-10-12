@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, X, Send, ArrowRight } from "lucide-react";
 import { client } from "@/api/client";
+import { getListings } from "@/services";
 import SmartImage from "@/components/ui/SmartImage";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -24,7 +25,7 @@ export default function AIConcierge() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    client.entities.Listing.list().then((res: Listing[]) => setListings(res)).catch(() => {});
+    getListings().then((res: Listing[]) => setListings(res)).catch(() => {});
   }, []);
 
   useEffect(() => {

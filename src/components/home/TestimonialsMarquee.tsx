@@ -202,10 +202,6 @@ function TestimonialCard({ item }: { item: Testimonial }) {
 }
 
 export default function TestimonialsMarquee() {
-  // Seamless loop by duplicating rows
-  const rowOneItems = [...ROW_ONE, ...ROW_ONE];
-  const rowTwoItems = [...ROW_TWO, ...ROW_TWO];
-
   return (
     <section className="relative overflow-hidden border-t border-border/70 bg-secondary/30 py-24 sm:py-28 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 text-center sm:px-8">
@@ -228,20 +224,30 @@ export default function TestimonialsMarquee() {
         <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-16 sm:w-44 bg-gradient-to-r from-background via-background/80 to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-16 sm:w-44 bg-gradient-to-l from-background via-background/80 to-transparent" />
 
-        {/* ROW 1: Scrolls Left to Right */}
+        {/* ROW 1: Scrolls Left */}
         <div className="group flex overflow-hidden py-3">
-          <div className="marquee-inner flex shrink-0 items-center gap-6 animate-marquee group-hover:[animation-play-state:paused] motion-reduce:animate-none motion-reduce:overflow-x-auto">
-            {rowOneItems.map((item, index) => (
-              <TestimonialCard key={`row1-${item.id}-${index}`} item={item} />
+          <div className="flex shrink-0 items-center gap-6 pr-6 animate-marquee group-hover:[animation-play-state:paused] motion-reduce:animate-none motion-reduce:overflow-x-auto">
+            {ROW_ONE.map((item, index) => (
+              <TestimonialCard key={`row1-a-${item.id}-${index}`} item={item} />
+            ))}
+          </div>
+          <div aria-hidden="true" className="flex shrink-0 items-center gap-6 pr-6 animate-marquee group-hover:[animation-play-state:paused] motion-reduce:hidden">
+            {ROW_ONE.map((item, index) => (
+              <TestimonialCard key={`row1-b-${item.id}-${index}`} item={item} />
             ))}
           </div>
         </div>
 
-        {/* ROW 2: Scrolls Right to Left */}
+        {/* ROW 2: Scrolls Right */}
         <div className="group mt-4 flex overflow-hidden py-3">
-          <div className="marquee-inner flex shrink-0 items-center gap-6 animate-marquee-reverse group-hover:[animation-play-state:paused] motion-reduce:animate-none motion-reduce:overflow-x-auto">
-            {rowTwoItems.map((item, index) => (
-              <TestimonialCard key={`row2-${item.id}-${index}`} item={item} />
+          <div className="flex shrink-0 items-center gap-6 pr-6 animate-marquee-reverse group-hover:[animation-play-state:paused] motion-reduce:animate-none motion-reduce:overflow-x-auto">
+            {ROW_TWO.map((item, index) => (
+              <TestimonialCard key={`row2-a-${item.id}-${index}`} item={item} />
+            ))}
+          </div>
+          <div aria-hidden="true" className="flex shrink-0 items-center gap-6 pr-6 animate-marquee-reverse group-hover:[animation-play-state:paused] motion-reduce:hidden">
+            {ROW_TWO.map((item, index) => (
+              <TestimonialCard key={`row2-b-${item.id}-${index}`} item={item} />
             ))}
           </div>
         </div>

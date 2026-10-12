@@ -5,7 +5,7 @@ import PageHero from "@/components/ui/PageHero";
 import SectionReveal from "@/components/ui/SectionReveal";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/lib/AuthContext";
-import { client } from "@/api/client";
+import { createSupportTicket } from "@/services";
 
 const NEWS = [
   { date: "Sep 2026", headline: "Haven raises Series B to expand its curated stay collection", summary: "The round will fund new destinations across the Mediterranean and a deeper concierge network in every city Haven operates." },
@@ -87,12 +87,16 @@ export default function Press() {
     if (!user) { toast({ title: "Please sign in", description: "A press inquiry needs an account.", variant: "destructive" }); return; }
     setSubmitting(true);
     try {
-      await client.entities.SupportTicket.create({
-        userId: user.id, name: form.name, email: form.email, topic: "Press inquiry", message: `Outlet: ${form.outlet}\n\n${form.message}`,
+      await createSupportTicket({
+        userId: user.id,
+        name: form.name,
+        email: form.email,
+        subject: "Press inquiry",
+        message: `Outlet: ${form.outlet}\n\n${form.message}`,
       });
       setSent(true);
-    } catch (err) {
-      toast({ title: "Couldn't send inquiry", description: err.message, variant: "destructive" });
+    } catch (err: any) {
+      toast({ title: "Couldn't send inquiry", description: err?.message, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }

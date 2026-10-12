@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Star, MapPin, ArrowRight } from "lucide-react";
-import { client } from "@/api/client";
+import { getListings } from "@/services";
 import SmartImage from "@/components/ui/SmartImage";
 import SectionReveal from "@/components/ui/SectionReveal";
 import { formatCurrency } from "@/lib/format";
@@ -11,7 +11,7 @@ export default function SimilarStays({ listing }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    client.entities.Listing.list()
+    getListings()
       .then((all) => {
         const rest = all.filter((l) => l.id !== listing.id);
         const scored = rest.map((l) => {
