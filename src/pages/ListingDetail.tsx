@@ -32,6 +32,9 @@ export default function ListingDetail() {
   const [checkOut, setCheckOut] = useState(null);
   const [guests, setGuests] = useState(2);
   const [lightbox, setLightbox] = useState(null);
+  const [stayMode, setStayMode] = useState<"overnight" | "day_use">("overnight");
+  const [dayUseDate, setDayUseDate] = useState<string | null>(null);
+  const [dayUseTimeSlot, setDayUseTimeSlot] = useState("09:00 - 17:00");
 
   useEffect(() => {
     setLoading(true);
@@ -67,12 +70,26 @@ export default function ListingDetail() {
 
   const images = listing.images || [];
   const nights = nightsBetween(checkIn, checkOut);
-  const price = calcTotal(listing.pricePerNight, nights);
+
+  const dayUsePrice = (listing as any).dayUsePricePerBlock || Math.round((listing as any).pricePerNight * 0.45);
+  const price = calcTotal((listing as any).pricePerNight, nights);
   const avgRating = reviews.length
-    ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
-    : listing.rating?.toFixed(1);
+    ? (reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length).toFixed(1)
+    : (listing as any).rating?.toFixed(1);
 
   const reserve = () => {
+    if (stayMode === "day_use") {
+      if (!dayUseDate) return;
+      const params = new URLSearchParams({
+        stayType: "day_use",
+        date: dayUseDate,
+        timeSlot: dayUseTimeSlot,
+        guests: String(guests),
+      });
+      navigate(`/booking/${id}?${params.toString()}`);
+      return;
+    }
+
     if (!checkIn || !checkOut) return;
     const params = new URLSearchParams({ checkIn, checkOut, guests: String(guests) });
     navigate(`/booking/${id}?${params.toString()}`);
@@ -329,14 +346,64 @@ function HoverHint() {
   );
 }
 
-function BookingCard({ listing, bookedRanges, checkIn, checkOut, setRange, guests, setGuests, nights, price, onReserve, onSchedule }) {
-  const canReserve = checkIn && checkOut && nights >= 1;
+function BookingCard({
+  listing,
+  bookedRanges,
+  checkIn,
+  checkOut,
+  setRange,
+  guests,
+  setGuests,
+  nights,
+  price,
+  stayMode,
+  setStayMode,
+  dayUseDate,
+  setDayUseDate,
+  dayUseTimeSlot,
+  setDayUseTimeSlot,
+  dayUsePrice,
+  onReserve,
+  onSchedule,
+}: any) {
+  const hasDayUse = listing.stayType === "both" || listing.stayType === "day_use";
+  const isDayUse = stayMode === "day_use";
+  const canReserve = isDayUse ? Boolean(dayUseDate) : Boolean(checkIn && checkOut && nights >= 1);
+
   return (
     <div className="rounded-3xl border border-border bg-card p-6 shadow-luxe">
+      {/* Stay Mode Switcher if day use is enabled */}
+      {hasDayUse && (
+        <div className="mb-5 flex rounded-full border border-border p-1 bg-secondary/50">
+          <button
+            type="button"
+            onClick={() => setStayMode("overnight")}
+            className={cn(
+              "flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
+              !isDayUse ? "bg-foreground text-background font-semibold" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Overnight Stay
+          </button>
+          <button
+            type="button"
+            onClick={() => setStayMode("day_use")}
+            className={cn(
+              "flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
+              isDayUse ? "bg-foreground text-background font-semibold" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Day Use (8h Block)
+          </button>
+        </div>
+      )}
+
       <div className="flex items-baseline justify-between">
         <div>
-          <span className="text-2xl font-semibold">{formatCurrency(listing.pricePerNight)}</span>
-          <span className="text-muted-foreground"> night</span>
+          <span className="text-2xl font-semibold">
+            {formatCurrency(isDayUse ? dayUsePrice : listing.pricePerNight)}
+          </span>
+          <span className="text-muted-foreground">{isDayUse ? " / 8h block" : " / night"}</span>
         </div>
         <div className="flex items-center gap-1 text-sm">
           <Star size={13} className="fill-accent text-accent" />
@@ -344,38 +411,94 @@ function BookingCard({ listing, bookedRanges, checkIn, checkOut, setRange, guest
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-border">
-        <div className="grid grid-cols-2 border-b border-border">
-          <div className="border-r border-border p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wide">Check in</p>
-            <p className="text-sm text-muted-foreground">{checkIn || "Add date"}</p>
+      {isDayUse ? (
+        /* DAY USE FORM */
+        <div className="mt-5 space-y-3">
+          <div className="rounded-2xl border border-border p-3 bg-secondary/20">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Access Date
+            </label>
+            <input
+              type="date"
+              value={dayUseDate || ""}
+              onChange={(e) => setDayUseDate(e.target.value)}
+              className="mt-1 w-full bg-transparent text-sm font-semibold outline-none"
+            />
           </div>
-          <div className="p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wide">Check out</p>
-            <p className="text-sm text-muted-foreground">{checkOut || "Add date"}</p>
-          </div>
-        </div>
-        <div className="p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wide">Guests</p>
-          <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} className="w-full bg-transparent text-sm outline-none">
-            {Array.from({ length: listing.maxGuests }).map((_, i) => (
-              <option key={i} value={i + 1}>{i + 1} {i === 0 ? "guest" : "guests"}</option>
-            ))}
-          </select>
-        </div>
-      </div>
 
-      <div className="mt-5">
-        <DateRangePicker bookedRanges={bookedRanges} checkIn={checkIn} checkOut={checkOut} onChange={setRange} />
-      </div>
+          <div className="rounded-2xl border border-border p-3 bg-secondary/20">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              8-Hour Time Window
+            </label>
+            <select
+              value={dayUseTimeSlot}
+              onChange={(e) => setDayUseTimeSlot(e.target.value)}
+              className="mt-1 w-full bg-transparent text-sm font-semibold outline-none"
+            >
+              <option value="09:00 - 17:00">9:00 AM – 5:00 PM (Day block)</option>
+              <option value="12:00 - 20:00">12:00 PM – 8:00 PM (Twilight block)</option>
+              <option value="14:00 - 22:00">2:00 PM – 10:00 PM (Evening block)</option>
+            </select>
+          </div>
+
+          <div className="rounded-2xl border border-border p-3 bg-secondary/20">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Guests
+            </label>
+            <select
+              value={guests}
+              onChange={(e) => setGuests(Number(e.target.value))}
+              className="mt-1 w-full bg-transparent text-sm outline-none"
+            >
+              {Array.from({ length: listing.maxGuests || 6 }).map((_, i) => (
+                <option key={i} value={i + 1}>
+                  {i + 1} {i === 0 ? "guest" : "guests"}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      ) : (
+        /* OVERNIGHT FORM */
+        <>
+          <div className="mt-5 rounded-2xl border border-border">
+            <div className="grid grid-cols-2 border-b border-border">
+              <div className="border-r border-border p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide">Check in</p>
+                <p className="text-sm text-muted-foreground">{checkIn || "Add date"}</p>
+              </div>
+              <div className="p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide">Check out</p>
+                <p className="text-sm text-muted-foreground">{checkOut || "Add date"}</p>
+              </div>
+            </div>
+            <div className="p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide">Guests</p>
+              <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} className="w-full bg-transparent text-sm outline-none">
+                {Array.from({ length: listing.maxGuests }).map((_, i) => (
+                  <option key={i} value={i + 1}>{i + 1} {i === 0 ? "guest" : "guests"}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <DateRangePicker bookedRanges={bookedRanges} checkIn={checkIn} checkOut={checkOut} onChange={setRange} />
+          </div>
+        </>
+      )}
 
       {canReserve && (
         <div className="mt-5 space-y-2 border-t border-border pt-5 text-sm">
-          <Row label={`${formatCurrency(listing.pricePerNight)} × ${nights} nights`} value={formatCurrency(listing.pricePerNight * nights)} />
-          <Row label="Cleaning fee" value={formatCurrency(price.cleaning)} />
-          <Row label="Service fee" value={formatCurrency(price.service)} />
+          <Row
+            label={isDayUse ? "Day Use 8h Block Rate" : `${formatCurrency(listing.pricePerNight)} × ${nights} nights`}
+            value={formatCurrency(isDayUse ? dayUsePrice : listing.pricePerNight * nights)}
+          />
+          <Row label="Cleaning fee" value={formatCurrency(isDayUse ? Math.round(dayUsePrice * 0.1) : price.cleaning)} />
+          <Row label="Service fee" value={formatCurrency(isDayUse ? Math.round(dayUsePrice * 0.05) : price.service)} />
           <div className="flex justify-between border-t border-border pt-3 text-base font-semibold">
-            <span>Total</span><span>{formatCurrency(price.total)}</span>
+            <span>Total</span>
+            <span>{formatCurrency(isDayUse ? Math.round(dayUsePrice * 1.15) : price.total)}</span>
           </div>
         </div>
       )}
@@ -383,9 +506,14 @@ function BookingCard({ listing, bookedRanges, checkIn, checkOut, setRange, guest
       <button
         onClick={onReserve}
         disabled={!canReserve}
-        className={cn("mt-5 w-full rounded-full py-3.5 text-sm font-medium transition-all", canReserve ? "bg-foreground text-background hover:scale-[1.01] active:scale-95" : "cursor-not-allowed bg-muted text-muted-foreground")}
+        className={cn(
+          "mt-5 w-full rounded-full py-3.5 text-sm font-medium transition-all",
+          canReserve
+            ? "bg-foreground text-background hover:scale-[1.01] active:scale-95 shadow-md"
+            : "cursor-not-allowed bg-muted text-muted-foreground"
+        )}
       >
-        {canReserve ? "Reserve" : "Select dates"}
+        {canReserve ? (isDayUse ? "Reserve Day Use" : "Reserve Stay") : (isDayUse ? "Select access date" : "Select dates")}
       </button>
       <p className="mt-2 text-center text-xs text-muted-foreground">You won't be charged yet</p>
 

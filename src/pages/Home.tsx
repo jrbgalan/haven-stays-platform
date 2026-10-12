@@ -95,8 +95,8 @@ export default function Home() {
         </motion.div>
 
         {/* SEARCH BAR POSITIONED OVER HERO */}
-        <div className="absolute inset-x-0 bottom-[-1.5rem] z-20 px-5 sm:bottom-10">
-          <div className="mx-auto max-w-3xl shadow-2xl">
+        <div className="absolute inset-x-0 bottom-[-3.5rem] z-20 px-4 sm:bottom-6 sm:px-6">
+          <div className="mx-auto max-w-4xl lg:max-w-5xl">
             <SearchBar />
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1, duration: 0.8 }}
-          className="absolute bottom-3 left-1/2 z-10 hidden -translate-x-1/2 sm:block"
+          className="absolute bottom-1 left-1/2 z-10 hidden -translate-x-1/2 lg:block"
         >
           <motion.div
             animate={{ y: [0, 6, 0] }}
@@ -120,7 +120,7 @@ export default function Home() {
       </section>
 
       {/* 2. BROWSE BY CATEGORIES SECTION */}
-      <section className="mx-auto max-w-7xl px-5 pt-28 pb-16 sm:px-8 sm:pt-36 sm:pb-20">
+      <section className="mx-auto max-w-7xl px-5 pt-36 pb-16 sm:px-8 sm:pt-44 sm:pb-20">
         <SectionReveal>
           <div className="flex items-end justify-between gap-4">
             <div>

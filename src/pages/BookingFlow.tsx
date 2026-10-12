@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import DateRangePicker from "@/components/booking/DateRangePicker";
 import SmartImage from "@/components/ui/SmartImage";
-import { formatCurrency, formatDate, nightsBetween, calcTotal } from "@/lib/format";
+import { formatCurrency, formatDate, nightsBetween, calcTotal, todayISO } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -31,6 +31,10 @@ export default function BookingFlow() {
   const [confirmed, setConfirmed] = useState(null);
   const [error, setError] = useState("");
 
+  const isDayUse = params.get("stayType") === "day_use";
+  const [dayUseDate, setDayUseDate] = useState(params.get("date") || todayISO());
+  const [timeSlot, setTimeSlot] = useState(params.get("timeSlot") || "09:00 - 17:00");
+
   const [checkIn, setCheckIn] = useState(params.get("checkIn") || null);
   const [checkOut, setCheckOut] = useState(params.get("checkOut") || null);
   const [guests, setGuests] = useState(Number(params.get("guests")) || 2);
@@ -43,7 +47,7 @@ export default function BookingFlow() {
 
   useEffect(() => {
     Promise.all([
-      client.entities.Listing.get(id).catch(() => null),
+      client.entities.Listing.get(id as string).catch(() => null),
       client.functions.invoke("getAvailability", { listingId: id }).then((r) => r.data).catch(() => ({ bookedRanges: [] })),
     ]).then(([l, avail]) => {
       setListing(l);
@@ -69,15 +73,22 @@ export default function BookingFlow() {
   }
 
   const nights = nightsBetween(checkIn, checkOut);
-  const price = calcTotal(listing.pricePerNight, nights);
+  const dayUseRate = (listing as any).dayUsePricePerBlock || Math.round((listing as any).pricePerNight * 0.45);
+  const price = isDayUse
+    ? {
+        total: Math.round(dayUseRate * 1.15),
+        cleaning: Math.round(dayUseRate * 0.1),
+        service: Math.round(dayUseRate * 0.05),
+      }
+    : calcTotal((listing as any).pricePerNight, nights);
 
-  const canNextDates = checkIn && checkOut && nights >= 1;
+  const canNextDates = isDayUse ? Boolean(dayUseDate && timeSlot) : Boolean(checkIn && checkOut && nights >= 1);
   const detailsValid = details.name.trim() && /\S+@\S+\.\S+/.test(details.email) && details.phone.trim().length >= 7;
 
   const next = () => {
     setError("");
     if (step === 0 && !canNextDates) {
-      setError("Please select your check-in and check-out dates.");
+      setError(isDayUse ? "Please select your date and time window." : "Please select your check-in and check-out dates.");
       return;
     }
     if (step === 1) {
@@ -95,20 +106,54 @@ export default function BookingFlow() {
     setSubmitting(true);
     setError("");
     try {
-      const res = await client.functions.invoke("createBooking", {
+      const payload: any = {
         listingId: id,
-        listingTitle: listing.title,
-        listingImage: listing.images?.[0],
-        checkIn, checkOut, guests,
-        nightlyPrice: listing.pricePerNight,
-        nights, cleaningFee: price.cleaning, serviceFee: price.service, totalPrice: price.total,
-        guestName: details.name, guestEmail: details.email,
-      });
+        listingTitle: (listing as any).title,
+        listingImage: (listing as any).images?.[0],
+        guests,
+        guestName: details.name,
+        guestEmail: details.email,
+        totalPrice: price.total,
+        cleaningFee: price.cleaning,
+        serviceFee: price.service,
+      };
+
+      if (isDayUse) {
+        payload.stayType = "day_use";
+        payload.date = dayUseDate;
+        payload.timeSlot = timeSlot;
+        payload.checkIn = dayUseDate;
+        payload.checkOut = dayUseDate;
+        payload.nights = 0;
+        payload.nightlyPrice = dayUseRate;
+      } else {
+        payload.stayType = "overnight";
+        payload.checkIn = checkIn;
+        payload.checkOut = checkOut;
+        payload.nights = nights;
+        payload.nightlyPrice = (listing as any).pricePerNight;
+      }
+
+      const res = await client.functions.invoke("createBooking", payload);
       const booking = res.data?.booking;
       if (!booking) throw new Error(res.data?.error || "Booking failed");
+
+      // Also register in ProductBooking for unified trips
+      await client.entities.ProductBooking.create({
+        productType: isDayUse ? "day_use" : "overnight",
+        itemId: id as string,
+        itemTitle: (listing as any).title,
+        itemSubtitle: isDayUse ? `${(listing as any).city} · 8-Hour Sanctuary Block` : `${(listing as any).city} · ${nights} Nights`,
+        itemImage: (listing as any).images?.[0],
+        dateOrTime: isDayUse ? `${dayUseDate} · ${timeSlot}` : `${checkIn} → ${checkOut}`,
+        timeSlot: isDayUse ? timeSlot : undefined,
+        passengersOrGuests: guests,
+        totalPrice: price.total,
+      }).catch(() => {});
+
       setConfirmed(booking);
       toast({ title: "Booking confirmed", description: `Reference ${booking.reference}` });
-    } catch (e) {
+    } catch (e: any) {
       const msg = e?.response?.data?.error || e?.message || "Booking failed";
       setError(msg);
       toast({ title: "Couldn't complete booking", description: msg, variant: "destructive" });
@@ -117,7 +162,7 @@ export default function BookingFlow() {
     }
   };
 
-  if (confirmed) return <Confirmation booking={confirmed} listing={listing} />;
+  if (confirmed) return <Confirmation booking={confirmed} listing={listing} isDayUse={isDayUse} timeSlot={timeSlot} />;
 
   return (
     <div className="pt-16">
@@ -157,16 +202,68 @@ export default function BookingFlow() {
         <AnimatePresence mode="wait">
           {step === 0 && (
             <Panel key="dates">
-              <h2 className="font-heading text-2xl font-medium">When are you coming?</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Pick your dates. Booked nights are crossed out.</p>
-              <div className="mt-6">
-                <DateRangePicker bookedRanges={bookedRanges} checkIn={checkIn} checkOut={checkOut} onChange={(ci, co) => { setCheckIn(ci); setCheckOut(co); }} />
-              </div>
+              <h2 className="font-heading text-2xl font-medium">
+                {isDayUse ? "Select Day & Time Slot" : "When are you coming?"}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {isDayUse
+                  ? "Choose your reserved 8-hour sanctuary access block."
+                  : "Pick your dates. Booked nights are crossed out."}
+              </p>
+
+              {isDayUse ? (
+                <div className="mt-6 space-y-4">
+                  <div className="rounded-2xl border border-border p-4 bg-secondary/30">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Access Date
+                    </label>
+                    <input
+                      type="date"
+                      min={todayISO()}
+                      value={dayUseDate}
+                      onChange={(e) => setDayUseDate(e.target.value)}
+                      className="mt-1.5 w-full bg-transparent text-sm font-semibold outline-none"
+                    />
+                  </div>
+
+                  <div className="rounded-2xl border border-border p-4 bg-secondary/30">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      8-Hour Time Window
+                    </label>
+                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      {[
+                        { slot: "09:00 - 17:00", label: "9AM – 5PM (Day block)" },
+                        { slot: "12:00 - 20:00", label: "12PM – 8PM (Twilight block)" },
+                        { slot: "14:00 - 22:00", label: "2PM – 10PM (Evening block)" },
+                      ].map((w) => (
+                        <button
+                          key={w.slot}
+                          type="button"
+                          onClick={() => setTimeSlot(w.slot)}
+                          className={cn(
+                            "rounded-2xl border p-3 text-left text-xs font-medium transition-all",
+                            timeSlot === w.slot
+                              ? "border-accent bg-accent/15 text-foreground font-semibold"
+                              : "border-border hover:bg-secondary text-muted-foreground"
+                          )}
+                        >
+                          {w.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <DateRangePicker bookedRanges={bookedRanges} checkIn={checkIn} checkOut={checkOut} onChange={(ci, co) => { setCheckIn(ci); setCheckOut(co); }} />
+                </div>
+              )}
+
               <div className="mt-6 flex items-center gap-3 rounded-2xl border border-border p-4">
                 <Users size={18} className="text-muted-foreground" />
                 <span className="text-sm font-medium">Guests</span>
                 <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} className="ml-auto rounded-lg border border-border bg-transparent px-3 py-1.5 text-sm">
-                  {Array.from({ length: listing.maxGuests }).map((_, i) => (
+                  {Array.from({ length: (listing as any).maxGuests || 6 }).map((_, i) => (
                     <option key={i} value={i + 1}>{i + 1} {i === 0 ? "guest" : "guests"}</option>
                   ))}
                 </select>
@@ -195,14 +292,21 @@ export default function BookingFlow() {
           {step === 2 && (
             <Panel key="review">
               <h2 className="font-heading text-2xl font-medium">Review and confirm</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Check the details before we lock in your stay.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Check the details before we lock in your reservation.</p>
               <div className="mt-6 space-y-4">
-                <InfoRow icon={Calendar} label="Dates" value={`${formatDate(checkIn)} → ${formatDate(checkOut)}`} sub={`${nights} ${nights === 1 ? "night" : "nights"}`} />
+                {isDayUse ? (
+                  <InfoRow icon={Calendar} label="Day Access" value={formatDate(dayUseDate)} sub={`8h Time Slot: ${timeSlot}`} />
+                ) : (
+                  <InfoRow icon={Calendar} label="Dates" value={`${formatDate(checkIn)} → ${formatDate(checkOut)}`} sub={`${nights} ${nights === 1 ? "night" : "nights"}`} />
+                )}
                 <InfoRow icon={Users} label="Guests" value={`${guests} ${guests === 1 ? "guest" : "guests"}`} />
                 <InfoRow icon={Home} label="Guest" value={details.name} sub={details.email} />
               </div>
               <div className="mt-6 space-y-2.5 rounded-2xl border border-border p-5 text-sm">
-                <Row label={`${formatCurrency(listing.pricePerNight)} × ${nights} nights`} value={formatCurrency(listing.pricePerNight * nights)} />
+                <Row
+                  label={isDayUse ? "Day Use 8h Block Rate" : `${formatCurrency((listing as any).pricePerNight)} × ${nights} nights`}
+                  value={formatCurrency(isDayUse ? dayUseRate : (listing as any).pricePerNight * nights)}
+                />
                 <Row label="Cleaning fee" value={formatCurrency(price.cleaning)} />
                 <Row label="Service fee" value={formatCurrency(price.service)} />
                 <div className="flex justify-between border-t border-border pt-3 text-base font-semibold">
@@ -282,7 +386,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return <div className="flex justify-between text-foreground/80"><span>{label}</span><span className="tabular-nums">{value}</span></div>;
 }
 
-function Confirmation({ booking, listing }) {
+function Confirmation({ booking, listing, isDayUse, timeSlot }: { booking: any; listing: any; isDayUse?: boolean; timeSlot?: string }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
     navigator.clipboard?.writeText(booking.reference);
@@ -296,10 +400,12 @@ function Confirmation({ booking, listing }) {
           <PartyPopper size={28} />
         </motion.div>
         <motion.h1 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mt-6 font-heading text-3xl font-medium tracking-tight sm:text-4xl">
-          Your stay is confirmed
+          {isDayUse ? "Your Day Access is confirmed" : "Your stay is confirmed"}
         </motion.h1>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="mt-3 text-muted-foreground">
-          We've reserved {listing.title} for {booking.nights} {booking.nights === 1 ? "night" : "nights"}.
+          {isDayUse
+            ? `We've reserved ${listing.title} for your 8-hour sanctuary block (${timeSlot || "9AM - 5PM"}).`
+            : `We've reserved ${listing.title} for ${booking.nights} ${booking.nights === 1 ? "night" : "nights"}.`}
         </motion.p>
 
         <div className="mt-8 rounded-3xl border border-border bg-card p-6 text-left shadow-luxe">
@@ -308,11 +414,25 @@ function Confirmation({ booking, listing }) {
             <div>
               <p className="font-medium">{listing.title}</p>
               <p className="text-sm text-muted-foreground">{listing.location}, {listing.country}</p>
+              {isDayUse && (
+                <span className="mt-1 inline-block rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                  Day Access (8 Hours)
+                </span>
+              )}
             </div>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 border-t border-border pt-5 text-sm">
-            <div><p className="text-xs uppercase text-muted-foreground">Check in</p><p className="font-medium">{formatDate(booking.checkIn)}</p></div>
-            <div><p className="text-xs uppercase text-muted-foreground">Check out</p><p className="font-medium">{formatDate(booking.checkOut)}</p></div>
+            {isDayUse ? (
+              <>
+                <div><p className="text-xs uppercase text-muted-foreground">Access Date</p><p className="font-medium">{formatDate(booking.checkIn || booking.date)}</p></div>
+                <div><p className="text-xs uppercase text-muted-foreground">Time Window</p><p className="font-medium">{timeSlot || "9:00 AM – 5:00 PM"}</p></div>
+              </>
+            ) : (
+              <>
+                <div><p className="text-xs uppercase text-muted-foreground">Check in</p><p className="font-medium">{formatDate(booking.checkIn)}</p></div>
+                <div><p className="text-xs uppercase text-muted-foreground">Check out</p><p className="font-medium">{formatDate(booking.checkOut)}</p></div>
+              </>
+            )}
             <div><p className="text-xs uppercase text-muted-foreground">Guests</p><p className="font-medium">{booking.guests}</p></div>
             <div><p className="text-xs uppercase text-muted-foreground">Total paid</p><p className="font-medium">{formatCurrency(booking.totalPrice)}</p></div>
           </div>

@@ -9,6 +9,10 @@ export interface Listing {
   images?: string[];
   amenities?: string[];
   category: 'Beachfront' | 'Cabins' | 'Villas' | 'City' | 'Countryside' | string;
+  propertyType?: 'hotel' | 'home' | 'apartment';
+  stayType?: 'overnight' | 'day_use' | 'both';
+  dayUsePricePerBlock?: number;
+  dayUseTimeSlots?: string[];
   bedrooms?: number;
   bathrooms?: number;
   maxGuests?: number;

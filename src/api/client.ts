@@ -1,11 +1,21 @@
 import { CURATED_LISTINGS, CURATED_PLACES, CURATED_REVIEWS } from '@/lib/curatedStays';
 import { runAITripConcierge, runAISmartSearch, runAIListingHelper, runHostChatReply } from '@/lib/openai';
+import {
+  enrichListings,
+  MOCK_ACTIVITIES,
+  MOCK_TRANSFERS,
+  MOCK_FLIGHTS,
+  MOCK_BUNDLES,
+  INITIAL_PRODUCT_BOOKINGS,
+} from '@/lib/mockProductData';
 import type { Listing } from '@/types/listing';
+import type { ProductBooking, Activity, Transfer, Flight, HotelFlightBundle } from '@/types/products';
 
 // Storage keys
 const KEY_USER = 'haven_current_user';
 const KEY_LISTINGS = 'haven_listings';
 const KEY_BOOKINGS = 'haven_bookings';
+const KEY_PRODUCT_BOOKINGS = 'haven_product_bookings';
 const KEY_APPTS = 'haven_appointments';
 const KEY_CONVS = 'haven_conversations';
 const KEY_MSGS = 'haven_messages';
@@ -27,9 +37,20 @@ function save<T>(key: string, data: T) {
   } catch {}
 }
 
+const ENRICHED_CURATED_LISTINGS = enrichListings(CURATED_LISTINGS);
+
 // Default initial state
 if (!localStorage.getItem(KEY_LISTINGS)) {
-  save(KEY_LISTINGS, CURATED_LISTINGS);
+  save(KEY_LISTINGS, ENRICHED_CURATED_LISTINGS);
+} else {
+  // Ensure existing stored listings also get enriched if missing propertyType
+  const existing = load<Listing[]>(KEY_LISTINGS, []);
+  if (existing.length > 0 && !existing[0].propertyType) {
+    save(KEY_LISTINGS, enrichListings(existing));
+  }
+}
+if (!localStorage.getItem(KEY_PRODUCT_BOOKINGS)) {
+  save(KEY_PRODUCT_BOOKINGS, INITIAL_PRODUCT_BOOKINGS);
 }
 if (!localStorage.getItem(KEY_REVIEWS)) {
   save(KEY_REVIEWS, CURATED_REVIEWS);
@@ -363,6 +384,109 @@ export const client = {
         return { success: true };
       },
     },
+
+    ProductBooking: {
+      list: async (): Promise<ProductBooking[]> => {
+        return load<ProductBooking[]>(KEY_PRODUCT_BOOKINGS, INITIAL_PRODUCT_BOOKINGS);
+      },
+      filter: async (query: any = {}): Promise<ProductBooking[]> => {
+        const stored = load<ProductBooking[]>(KEY_PRODUCT_BOOKINGS, INITIAL_PRODUCT_BOOKINGS);
+        return stored.filter((b: any) => {
+          for (const [k, v] of Object.entries(query || {})) {
+            if (b[k] !== v) return false;
+          }
+          return true;
+        });
+      },
+      create: async (data: Partial<ProductBooking>): Promise<ProductBooking> => {
+        const stored = load<ProductBooking[]>(KEY_PRODUCT_BOOKINGS, INITIAL_PRODUCT_BOOKINGS);
+        const prefixMap: Record<string, string> = {
+          hotels: 'HT',
+          homes: 'HM',
+          overnight: 'OV',
+          day_use: 'DU',
+          activities: 'AC',
+          transfers: 'TR',
+          flights: 'FL',
+          packages: 'PK',
+        };
+        const pfx = prefixMap[data.productType || 'overnight'] || 'HV';
+        const item: ProductBooking = {
+          id: 'pbk-' + Math.random().toString(36).substring(2, 9),
+          productType: data.productType || 'overnight',
+          itemId: data.itemId || 'item-1',
+          itemTitle: data.itemTitle || 'Haven Reservation',
+          itemSubtitle: data.itemSubtitle,
+          itemImage: data.itemImage,
+          dateOrTime: data.dateOrTime || new Date().toLocaleDateString(),
+          timeSlot: data.timeSlot,
+          passengersOrGuests: data.passengersOrGuests || 1,
+          rooms: data.rooms || 1,
+          totalPrice: data.totalPrice || 0,
+          status: 'confirmed',
+          referenceCode: generateRef(pfx),
+          createdAt: new Date().toISOString(),
+          details: data.details || {},
+        };
+        save(KEY_PRODUCT_BOOKINGS, [item, ...stored]);
+        return item;
+      },
+      update: async (id: string, patch: Partial<ProductBooking>): Promise<ProductBooking | undefined> => {
+        const stored = load<ProductBooking[]>(KEY_PRODUCT_BOOKINGS, INITIAL_PRODUCT_BOOKINGS);
+        const updated = stored.map((b) => (b.id === id ? { ...b, ...patch } : b));
+        save(KEY_PRODUCT_BOOKINGS, updated);
+        return updated.find((b) => b.id === id);
+      },
+      delete: async (id: string) => {
+        const stored = load<ProductBooking[]>(KEY_PRODUCT_BOOKINGS, INITIAL_PRODUCT_BOOKINGS);
+        save(KEY_PRODUCT_BOOKINGS, stored.filter((b) => b.id !== id));
+        return { success: true };
+      },
+    },
+
+    Activity: {
+      list: async (): Promise<Activity[]> => MOCK_ACTIVITIES,
+      get: async (id: string): Promise<Activity | undefined> => MOCK_ACTIVITIES.find((a) => a.id === id),
+      filter: async (query: any = {}): Promise<Activity[]> => {
+        return MOCK_ACTIVITIES.filter((a: any) => {
+          for (const [k, v] of Object.entries(query)) {
+            if (a[k] !== v) return false;
+          }
+          return true;
+        });
+      },
+    },
+
+    Transfer: {
+      list: async (): Promise<Transfer[]> => MOCK_TRANSFERS,
+      get: async (id: string): Promise<Transfer | undefined> => MOCK_TRANSFERS.find((t) => t.id === id),
+      filter: async (query: any = {}): Promise<Transfer[]> => {
+        return MOCK_TRANSFERS.filter((t: any) => {
+          for (const [k, v] of Object.entries(query)) {
+            if (t[k] !== v) return false;
+          }
+          return true;
+        });
+      },
+    },
+
+    Flight: {
+      list: async (): Promise<Flight[]> => MOCK_FLIGHTS,
+      get: async (id: string): Promise<Flight | undefined> => MOCK_FLIGHTS.find((f) => f.id === id),
+      filter: async (query: any = {}): Promise<Flight[]> => {
+        return MOCK_FLIGHTS.filter((f: any) => {
+          for (const [k, v] of Object.entries(query)) {
+            if (f[k] !== v) return false;
+          }
+          return true;
+        });
+      },
+    },
+
+    Package: {
+      list: async (): Promise<HotelFlightBundle[]> => MOCK_BUNDLES,
+      get: async (id: string): Promise<HotelFlightBundle | undefined> => MOCK_BUNDLES.find((b) => b.id === id),
+    },
   },
 
   functions: {
@@ -392,6 +516,11 @@ export const client = {
       if (name === 'createBooking') {
         const booking = await client.entities.Booking.create(payload);
         return { data: { booking } };
+      }
+
+      if (name === 'createProductBooking') {
+        const productBooking = await client.entities.ProductBooking.create(payload);
+        return { data: { productBooking } };
       }
 
       if (name === 'bookAppointment') {
