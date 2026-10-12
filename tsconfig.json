@@ -13,10 +13,10 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Compatibility & incremental migration */
+    /* TypeScript options */
     "strict": false,
-    "allowJs": true,
-    "checkJs": false,
+    "noImplicitAny": false,
+    "allowJs": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
 
@@ -26,7 +26,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
 

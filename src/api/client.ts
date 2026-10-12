@@ -76,7 +76,7 @@ export const client = {
       save(KEY_USER, user);
       return user;
     },
-    logout: async () => {
+    logout: async (_redirectUrl?: string) => {
       localStorage.removeItem(KEY_USER);
     },
     updateMe: async (patch: any) => {
@@ -85,8 +85,27 @@ export const client = {
       save(KEY_USER, updated);
       return updated;
     },
-    redirectToLogin: () => {
+    redirectToLogin: (_redirectUrl?: string) => {
       window.location.href = '/login';
+    },
+    resetPassword: async (_params: { email?: string; resetToken?: string; newPassword?: string; [key: string]: any }) => {
+      return { success: true };
+    },
+    resetPasswordRequest: async (_email: string) => {
+      return { success: true };
+    },
+    verifyOtp: async ({ email }: { email: string; otpCode?: string; [key: string]: any }) => {
+      return { access_token: 'mock-token', user: { id: 'u-1', email } };
+    },
+    setToken: (_token: string) => {},
+    loginViaEmailPassword: async (email: string, password?: string) => {
+      return client.auth.login({ email, password });
+    },
+    resendOtp: async (_email: string) => {
+      return { success: true };
+    },
+    loginWithProvider: (_provider: string, returnTo?: string) => {
+      window.location.href = returnTo || '/';
     },
   },
 
@@ -184,6 +203,12 @@ export const client = {
         save(KEY_BOOKINGS, [item, ...stored]);
         return item;
       },
+      update: async (id: string, patch: any) => {
+        const stored = load<any[]>(KEY_BOOKINGS, []);
+        const updated = stored.map((b) => (b.id === id ? { ...b, ...patch } : b));
+        save(KEY_BOOKINGS, updated);
+        return updated.find((b) => b.id === id);
+      },
     },
 
     Appointment: {
@@ -208,6 +233,12 @@ export const client = {
         };
         save(KEY_APPTS, [item, ...stored]);
         return item;
+      },
+      update: async (id: string, patch: any) => {
+        const stored = load<any[]>(KEY_APPTS, []);
+        const updated = stored.map((a) => (a.id === id ? { ...a, ...patch } : a));
+        save(KEY_APPTS, updated);
+        return updated.find((a) => a.id === id);
       },
     },
 
@@ -268,6 +299,16 @@ export const client = {
 
     Favorite: {
       list: async () => load(KEY_FAVS, []),
+      filter: async (query?: any) => {
+        const stored = load<any[]>(KEY_FAVS, []);
+        if (!query || Object.keys(query).length === 0) return stored;
+        return stored.filter((f) => {
+          for (const [k, v] of Object.entries(query)) {
+            if (f[k] !== v) return false;
+          }
+          return true;
+        });
+      },
       create: async (data: any) => {
         const stored = load<any[]>(KEY_FAVS, []);
         const item = { ...data, id: 'fav-' + Date.now() };
@@ -281,8 +322,46 @@ export const client = {
       },
     },
 
+    Report: {
+      create: async (data: any) => {
+        const stored = load<any[]>('haven_reports', []);
+        const item = { ...data, id: 'rep-' + Date.now() };
+        save('haven_reports', [item, ...stored]);
+        return item;
+      },
+    },
+
+    ConciergeRequest: {
+      create: async (data: any) => {
+        const stored = load<any[]>('haven_concierge_requests', []);
+        const item = { ...data, id: 'crq-' + Date.now() };
+        save('haven_concierge_requests', [item, ...stored]);
+        return item;
+      },
+    },
+
+    SupportTicket: {
+      create: async (data: any) => {
+        const stored = load<any[]>('haven_support_tickets', []);
+        const item = { ...data, id: 'tkt-' + Date.now() };
+        save('haven_support_tickets', [item, ...stored]);
+        return item;
+      },
+    },
+
     AvailabilitySlot: {
-      filter: async () => [],
+      filter: async (_query?: any) => load<any[]>('haven_availability_slots', []),
+      create: async (data: any) => {
+        const stored = load<any[]>('haven_availability_slots', []);
+        const item = { ...data, id: 'slot-' + Date.now() };
+        save('haven_availability_slots', [item, ...stored]);
+        return item;
+      },
+      delete: async (id: string) => {
+        const stored = load<any[]>('haven_availability_slots', []);
+        save('haven_availability_slots', stored.filter((s) => s.id !== id));
+        return { success: true };
+      },
     },
   },
 
@@ -371,6 +450,14 @@ export const client = {
       }
 
       return { data: {} };
+    },
+  },
+
+  integrations: {
+    Core: {
+      UploadPrivateFile: async ({ file }: { file: any }) => {
+        return { file_uri: typeof file === 'string' ? file : (file && typeof file === 'object' && 'name' in file ? URL.createObjectURL(file) : '') };
+      },
     },
   },
 

@@ -3,19 +3,19 @@ import pluginJs from "@eslint/js";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginUnusedImports from "eslint-plugin-unused-imports";
+import tseslint from "typescript-eslint";
 
 export default [
   {
     files: [
-      "src/components/**/*.{js,mjs,cjs,jsx}",
-      "src/pages/**/*.{js,mjs,cjs,jsx}",
-      "src/Layout.jsx",
+      "src/components/**/*.{js,mjs,cjs,jsx,ts,tsx}",
+      "src/pages/**/*.{js,mjs,cjs,jsx,ts,tsx}",
     ],
     ignores: ["src/lib/**/*", "src/components/ui/**/*"],
     ...pluginJs.configs.recommended,
     ...pluginReact.configs.flat.recommended,
     languageOptions: {
-      globals: globals.browser,
+      parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: "module",
@@ -23,6 +23,7 @@ export default [
           jsx: true,
         },
       },
+      globals: globals.browser,
     },
     settings: {
       react: {
