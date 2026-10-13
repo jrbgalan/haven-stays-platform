@@ -132,10 +132,12 @@ export default function Messages() {
   );
 
   return (
-    <div className="pt-16">
-      <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8 sm:py-10">
-        <h1 className="font-heading text-2xl font-medium tracking-tight sm:text-3xl">Messages</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Chat with your hosts and manage your conversations.</p>
+    <div className="pt-20 pb-12">
+      <div className="container-haven section-padding">
+        <div className="section-header">
+          <h1 className="font-heading text-2xl font-medium tracking-tight sm:text-3xl">Messages</h1>
+          <p className="mt-2.5 text-sm text-muted-foreground">Chat with your hosts and manage your conversations.</p>
+        </div>
 
         <div className="mt-6 grid h-[calc(100vh-13rem)] grid-cols-1 gap-0 overflow-hidden rounded-3xl border border-border bg-card sm:h-[calc(100vh-15rem)] lg:grid-cols-[320px_1fr]">
           {/* Conversation list */}

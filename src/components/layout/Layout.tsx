@@ -4,7 +4,6 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AIConcierge from "@/components/ai/AIConcierge";
 import BackToTop from "@/components/ui/BackToTop";
-import DemoModeBanner from "@/components/presentation/DemoModeBanner";
 import GuidedTour from "@/components/presentation/GuidedTour";
 
 export default function Layout() {
@@ -12,8 +11,7 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <DemoModeBanner onStartTour={() => setTourOpen(true)} />
-      <Navbar />
+      <Navbar onStartTour={() => setTourOpen(true)} />
       <main className="flex-1">
         <Outlet />
       </main>

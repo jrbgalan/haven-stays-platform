@@ -38,7 +38,7 @@ const DESTINATIONS: DestinationItem[] = [
     count: 14,
     season: "Dec – Jun",
     temp: "30°C",
-    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: "siargao",
@@ -149,27 +149,27 @@ export default function Destinations() {
     : DESTINATIONS.filter((d) => d.region === activeRegion);
 
   return (
-    <div className="min-h-screen pt-20">
+    <div>
       {/* HERO */}
-      <section className="relative overflow-hidden bg-background py-20 sm:py-28 lg:py-32">
+      <section className="relative overflow-hidden bg-background pt-24 pb-8 md:pt-28 md:pb-12 lg:pb-14">
         <div className="absolute inset-0 film-grain" />
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <div className="container-haven">
           <SectionReveal>
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-champagne/30 bg-champagne/10 px-4 py-1.5 text-xs font-medium tracking-wide text-champagne-dark dark:text-champagne-light">
                 <Globe size={13} /> The Global Collection
               </span>
-              <h1 className="mt-5 font-heading text-4xl font-medium tracking-tight sm:text-5xl lg:text-6xl text-foreground">
+              <h1 className="mt-2.5 font-heading text-4xl font-medium tracking-tight sm:text-5xl lg:text-6xl text-foreground">
                 Destinations Chosen for Quiet Wonder
               </h1>
-              <p className="mt-5 max-w-2xl text-lg text-muted-foreground leading-relaxed">
+              <p className="mt-3.5 max-w-2xl text-base sm:text-lg text-muted-foreground leading-relaxed">
                 From sun-drenched Cycladic cliffs to mist-veiled Japanese cedar valleys — browse hand-verified private estates across the world’s most evocative landscapes.
               </p>
             </div>
           </SectionReveal>
 
           {/* REGION FILTER CHIPS */}
-          <SectionReveal delay={0.1} className="mt-12">
+          <SectionReveal delay={0.1} className="mt-8 sm:mt-10">
             <div className="flex flex-wrap items-center gap-2 border-b border-border/60 pb-4">
               {REGIONS.map((region) => (
                 <button
@@ -190,8 +190,8 @@ export default function Destinations() {
       </section>
 
       {/* DESTINATIONS GRID */}
-      <section className="mx-auto max-w-7xl px-5 pb-24 sm:px-8 sm:pb-32">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <section className="container-haven section-padding-b">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {filtered.map((dest, idx) => (
             <SectionReveal key={dest.id} delay={idx * 0.05}>
               <Link

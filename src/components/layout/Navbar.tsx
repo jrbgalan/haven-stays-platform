@@ -4,23 +4,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu, X, LogOut, CalendarCheck, LayoutDashboard,
   MessageSquare, Globe, Bell, Check, Sparkles, ChevronDown, ArrowRight,
-  Palmtree, Waves, Mountain, Landmark, Utensils
+  Palmtree, Waves, Mountain, Landmark, Utensils,
+  User as UserIcon, Building2, RotateCcw, Heart, HelpCircle
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { getConversations } from "@/services";
+import { resetDemoData } from "@/lib/seedDemoData";
+import { useToast } from "@/components/ui/use-toast";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 
-// NAV ITEMS CONFIG
+export interface NavbarProps {
+  onStartTour?: () => void;
+}
+
+// PRIMARY TABS: Stays, Experiences, Destinations
 const PRIMARY_TABS = [
   { id: "stays", label: "Stays", to: "/explore", hasMega: true },
   { id: "experiences", label: "Experiences", to: "/experiences", hasMega: true },
   { id: "destinations", label: "Destinations", to: "/destinations", hasMega: true },
-  { id: "concierge", label: "Concierge", to: "/concierge", hasMega: false },
-  { id: "deals", label: "Deals", to: "/deals", hasMega: false },
-  { id: "journal", label: "Journal", to: "/journal", hasMega: false },
-  { id: "host", label: "Host", to: "/host", hasMega: false },
-  { id: "help", label: "Help", to: "/help", hasMega: false },
 ];
 
 // SAMPLE NOTIFICATIONS
@@ -30,22 +32,22 @@ const INITIAL_NOTIFICATIONS = [
     title: "Reservation Confirmed",
     desc: "Your sanctuary at Villa Calamian, Coron is confirmed for Nov 12.",
     time: "2 hours ago",
-    read: false
+    read: false,
   },
   {
     id: "notif-2",
     title: "Haven Concierge Update",
     desc: "Private sunset catamaran departure finalized with Captain Torres.",
     time: "1 day ago",
-    read: false
+    read: false,
   },
   {
     id: "notif-3",
     title: "New Seasonal Privilege",
     desc: "Haven members receive complimentary 4th night in Palawan this season.",
     time: "3 days ago",
-    read: true
-  }
+    read: true,
+  },
 ];
 
 const CURRENCIES = [
@@ -64,10 +66,13 @@ const LANGUAGES = [
   { code: "de", label: "Deutsch" },
 ];
 
-export default function Navbar() {
-  const { isAuthenticated, user, logout } = useAuth();
+export default function Navbar({ onStartTour }: NavbarProps) {
+  const { isAuthenticated, user, logout, loginAsGuest, loginAsHost } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isHomePage = location.pathname === "/";
 
   // Scroll visibility state
   const [visible, setVisible] = useState(true);
@@ -76,7 +81,7 @@ export default function Navbar() {
 
   // Popover menus state
   const [activeMega, setActiveMega] = useState<string | null>(null);
-  const [megaTimeout, setMegaTimeout] = useState<NodeJS.Timeout | null>(null);
+  const megaTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
@@ -92,6 +97,14 @@ export default function Navbar() {
 
   // Unread messages count
   const [unreadMessages, setUnreadMessages] = useState(0);
+
+  // Refs for outside click closing
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const megaRef = useRef<HTMLDivElement>(null);
+
+  // Touch handling for mobile drawer swipe to close
+  const touchStartXRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -111,11 +124,11 @@ export default function Navbar() {
     };
   }, [isAuthenticated, location.pathname]);
 
-  // SMART SCROLL: Hide on scroll down, show on scroll up
+  // SMART SCROLL: Hide on scroll down past 90px, show on scroll up, transparent at top
   useEffect(() => {
     const onScroll = () => {
       const currentY = window.scrollY;
-      setScrolled(currentY > 16);
+      setScrolled(currentY > 40);
 
       if (currentY <= 40) {
         setVisible(true);
@@ -134,6 +147,18 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   // Close menus on route navigation
   useEffect(() => {
     setMobileOpen(false);
@@ -143,21 +168,82 @@ export default function Navbar() {
     setLangModalOpen(false);
   }, [location.pathname]);
 
+  // Close popovers on ESC and click outside
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveMega(null);
+        setUserMenuOpen(false);
+        setNotifOpen(false);
+        setMobileOpen(false);
+        setLangModalOpen(false);
+      }
+    };
+    const onMouseDown = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onMouseDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onMouseDown);
+    };
+  }, []);
+
   const handleMegaEnter = (tabId: string) => {
-    if (megaTimeout) clearTimeout(megaTimeout);
+    if (megaTimeoutRef.current) clearTimeout(megaTimeoutRef.current);
     setActiveMega(tabId);
   };
 
   const handleMegaLeave = () => {
-    const timeout = setTimeout(() => {
+    megaTimeoutRef.current = setTimeout(() => {
       setActiveMega(null);
     }, 180);
-    setMegaTimeout(timeout);
   };
 
   const handleLogout = () => {
     logout(false);
     navigate("/");
+  };
+
+  const handleGuestSwitch = async () => {
+    setUserMenuOpen(false);
+    setMobileOpen(false);
+    await loginAsGuest();
+    toast({
+      title: "Switched to Guest Persona",
+      description: "Signed in as Eleanor Vance. My Trips, Wishlists, and Messages are active.",
+    });
+  };
+
+  const handleHostSwitch = async () => {
+    setUserMenuOpen(false);
+    setMobileOpen(false);
+    await loginAsHost();
+    toast({
+      title: "Switched to Host Persona",
+      description: "Signed in as Marcus Reed. Host Dashboard, Availability, and Inquiries are active.",
+    });
+    if (location.pathname !== "/host") {
+      navigate("/host");
+    }
+  };
+
+  const handleResetData = () => {
+    setUserMenuOpen(false);
+    setMobileOpen(false);
+    resetDemoData();
+    toast({
+      title: "Demo Data Re-seeded",
+      description: "Sample bookings, verified chats, and reviews restored.",
+    });
+    window.location.reload();
   };
 
   const markAllNotifsRead = () => {
@@ -169,59 +255,86 @@ export default function Navbar() {
     return location.pathname === tab.to;
   };
 
+  // Whether navbar is in hero transparent state
+  const isHeroTransparent = isHomePage && !scrolled;
+
   return (
     <>
       <header
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-out",
           visible ? "translate-y-0" : "-translate-y-full",
-          scrolled ? "glass border-b border-border/70 shadow-luxe py-2" : "bg-background/80 backdrop-blur-md border-b border-border/30 py-3.5"
+          // Height: 80px (h-20) at top, shrinking to 64px (h-16) on scroll
+          scrolled ? "h-16 shadow-luxe" : "h-20",
+          // Background & border transition
+          isHeroTransparent
+            ? "bg-transparent bg-gradient-to-b from-black/60 via-black/25 to-transparent text-white"
+            : "bg-[#F8F7F4]/80 dark:bg-[#121212]/80 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/[0.08] text-foreground"
         )}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* BRAND LOGO */}
-          <Link to="/" className="group flex items-center gap-2.5 shrink-0" aria-label="Haven home">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-foreground text-background shadow-sm transition-transform duration-200 group-hover:scale-105">
+        <div className="relative mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          {/* BRAND LOGO (Left) */}
+          <Link to="/" className="group flex items-center gap-2.5 shrink-0 z-10" aria-label="Haven home">
+            <span
+              className={cn(
+                "grid h-9 w-9 place-items-center rounded-xl shadow-sm transition-transform duration-200 group-hover:scale-105",
+                isHeroTransparent
+                  ? "bg-white/15 text-white border border-white/25 backdrop-blur-md"
+                  : "bg-foreground text-background"
+              )}
+            >
               <span className="font-heading text-lg font-semibold leading-none">H</span>
             </span>
-            <span className="font-heading text-2xl font-medium tracking-tight text-foreground">
+            <span
+              className={cn(
+                "font-heading text-2xl font-medium tracking-tight transition-colors duration-300",
+                isHeroTransparent ? "text-white" : "text-foreground"
+              )}
+            >
               Haven
             </span>
           </Link>
 
-          {/* DESKTOP NAV TABS */}
-          <nav className="hidden lg:flex items-center gap-1 relative" onMouseLeave={handleMegaLeave}>
+          {/* DESKTOP CENTER TABS (Stays, Experiences, Destinations) */}
+          <nav
+            ref={megaRef}
+            className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-2"
+            onMouseLeave={handleMegaLeave}
+          >
             {PRIMARY_TABS.map((tab) => {
               const active = isTabActive(tab);
               return (
                 <div
                   key={tab.id}
                   className="relative"
-                  onMouseEnter={() => (tab.hasMega ? handleMegaEnter(tab.id) : setActiveMega(null))}
+                  onMouseEnter={() => handleMegaEnter(tab.id)}
                 >
                   <Link
                     to={tab.to}
                     className={cn(
-                      "relative flex items-center gap-1 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-                      active ? "text-foreground font-semibold" : "text-foreground/70 hover:text-foreground hover:bg-secondary/60"
+                      "relative flex h-10 items-center gap-1.5 rounded-full px-4 text-[15px] font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                      isHeroTransparent
+                        ? (active ? "text-white font-semibold bg-white/15" : "text-white/85 hover:text-white hover:bg-white/10")
+                        : (active ? "text-foreground font-semibold bg-secondary/80" : "text-foreground/75 hover:text-foreground hover:bg-secondary/60")
                     )}
                   >
                     <span>{tab.label}</span>
-                    {tab.hasMega && (
-                      <ChevronDown
-                        size={12}
-                        className={cn(
-                          "transition-transform duration-200 opacity-60",
-                          activeMega === tab.id ? "rotate-180" : ""
-                        )}
-                      />
-                    )}
+                    <ChevronDown
+                      size={13}
+                      className={cn(
+                        "transition-transform duration-200 opacity-60",
+                        activeMega === tab.id ? "rotate-180" : ""
+                      )}
+                    />
 
                     {/* SLIDING ACTIVE TAB INDICATOR */}
                     {active && (
                       <motion.div
-                        layoutId="activeTabUnderline"
-                        className="absolute inset-x-3 -bottom-1 h-[2px] bg-champagne-dark dark:bg-champagne rounded-full"
+                        layoutId="navActiveUnderline"
+                        className={cn(
+                          "absolute inset-x-4 -bottom-1 h-[2px] rounded-full",
+                          isHeroTransparent ? "bg-white" : "bg-champagne-dark dark:bg-champagne"
+                        )}
                         transition={{ type: "spring", stiffness: 380, damping: 32 }}
                       />
                     )}
@@ -239,10 +352,10 @@ export default function Navbar() {
                   exit={{ opacity: 0, y: 8, scale: 0.99 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
                   onMouseEnter={() => {
-                    if (megaTimeout) clearTimeout(megaTimeout);
+                    if (megaTimeoutRef.current) clearTimeout(megaTimeoutRef.current);
                   }}
                   onMouseLeave={handleMegaLeave}
-                  className="absolute left-1/2 top-full mt-3 -translate-x-1/2 w-[720px] overflow-hidden rounded-3xl border border-border/80 bg-popover/95 p-6 shadow-2xl backdrop-blur-xl"
+                  className="absolute left-1/2 top-full mt-3 -translate-x-1/2 w-[720px] overflow-hidden rounded-[20px] border border-border/80 bg-popover/95 p-6 shadow-2xl backdrop-blur-xl"
                 >
                   {/* MEGA MENU: STAYS */}
                   {activeMega === "stays" && (
@@ -467,29 +580,39 @@ export default function Navbar() {
             </AnimatePresence>
           </nav>
 
-          {/* RIGHT UTILITIES & USER PROFILE */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* DESKTOP RIGHT UTILITIES (40px height each) */}
+          <div className="hidden lg:flex items-center gap-2.5 z-10">
             {/* CURRENCY / LANGUAGE SELECTOR */}
             <button
               onClick={() => setLangModalOpen(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/60 px-3 py-1.5 text-xs font-medium text-foreground/80 hover:bg-secondary transition-colors"
+              className={cn(
+                "h-10 inline-flex items-center gap-1.5 rounded-full px-3.5 text-xs font-medium transition-colors",
+                isHeroTransparent
+                  ? "border border-white/20 bg-white/10 text-white hover:bg-white/20 backdrop-blur-md"
+                  : "border border-border/70 bg-card/60 text-foreground/80 hover:bg-secondary"
+              )}
               title="Currency & Language"
               aria-label="Currency and Language Settings"
             >
-              <Globe size={13} className="text-foreground/70" />
+              <Globe size={14} className={isHeroTransparent ? "text-white/80" : "text-foreground/70"} />
               <span>{selectedCurrency} · {selectedLanguage.toUpperCase()}</span>
             </button>
 
             {/* NOTIFICATION BELL WITH BADGE */}
-            <div className="relative">
+            <div ref={notifRef} className="relative">
               <button
                 onClick={() => setNotifOpen((o) => !o)}
-                className="relative grid h-9 w-9 place-items-center rounded-full border border-border/70 bg-card/60 text-foreground transition-colors hover:bg-secondary"
+                className={cn(
+                  "relative grid h-10 w-10 place-items-center rounded-full transition-colors",
+                  isHeroTransparent
+                    ? "border border-white/20 bg-white/10 text-white hover:bg-white/20 backdrop-blur-md"
+                    : "border border-border/70 bg-card/60 text-foreground hover:bg-secondary"
+                )}
                 aria-label="Notifications"
               >
                 <Bell size={16} />
                 {unreadNotifsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 grid h-4 w-4 place-items-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground shadow-sm">
+                  <span className="absolute -top-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground shadow-sm">
                     {unreadNotifsCount}
                   </span>
                 )}
@@ -502,7 +625,7 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.98 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="absolute right-0 mt-2 w-80 overflow-hidden rounded-3xl border border-border/80 bg-popover shadow-2xl z-50"
+                    className="absolute right-0 mt-2 w-80 overflow-hidden rounded-[20px] border border-border/80 bg-popover shadow-2xl z-50"
                   >
                     <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
                       <span className="text-sm font-semibold text-foreground">Notifications</span>
@@ -538,114 +661,271 @@ export default function Navbar() {
             </div>
 
             {/* THEME TOGGLE */}
-            <ThemeToggle />
+            <ThemeToggle
+              className={cn(
+                "h-10 w-10",
+                isHeroTransparent
+                  ? "border border-white/20 bg-white/10 text-white hover:bg-white/20 backdrop-blur-md"
+                  : "border border-border/70 bg-card/60 text-foreground hover:bg-secondary"
+              )}
+            />
 
             {/* USER PROFILE DROPDOWN */}
-            {isAuthenticated ? (
-              <div className="relative">
-                <button
-                  onClick={() => setUserMenuOpen((o) => !o)}
-                  className="flex items-center gap-2 rounded-full border border-border/70 bg-card/60 py-1 pl-3 pr-1.5 transition-all hover:shadow-luxe focus-visible:ring-2 focus-visible:ring-accent"
-                  aria-label="Account menu"
-                >
-                  <Menu size={14} className="text-foreground/70" />
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-foreground text-xs font-semibold text-background">
-                    {(user?.full_name || user?.email || "U").charAt(0).toUpperCase()}
-                  </span>
-                </button>
-
-                <AnimatePresence>
-                  {userMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                      transition={{ duration: 0.18, ease: "easeOut" }}
-                      className="absolute right-0 mt-2 w-64 overflow-hidden rounded-3xl border border-border/80 bg-popover shadow-2xl z-50"
-                    >
-                      <div className="border-b border-border/60 px-5 py-3.5">
-                        <p className="truncate text-sm font-semibold text-foreground">
-                          {user?.full_name || "Guest Traveler"}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
-                      </div>
-
-                      <div className="py-1">
-                        <Link
-                          to="/dashboard"
-                          className="flex items-center gap-3 px-5 py-2.5 text-sm text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
-                        >
-                          <CalendarCheck size={16} /> My Trips
-                        </Link>
-                        <Link
-                          to="/messages"
-                          className="flex items-center justify-between px-5 py-2.5 text-sm text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
-                        >
-                          <span className="flex items-center gap-3">
-                            <MessageSquare size={16} /> Messages
-                          </span>
-                          {unreadMessages > 0 && (
-                            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1.5 text-[11px] font-bold text-accent-foreground">
-                              {unreadMessages}
-                            </span>
-                          )}
-                        </Link>
-                        {user?.role === "admin" && (
-                          <Link
-                            to="/host"
-                            className="flex items-center gap-3 px-5 py-2.5 text-sm text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
-                          >
-                            <LayoutDashboard size={16} /> Host Dashboard
-                          </Link>
-                        )}
-                        <Link
-                          to="/concierge"
-                          className="flex items-center gap-3 px-5 py-2.5 text-sm text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
-                        >
-                          <Sparkles size={16} className="text-champagne" /> Concierge Services
-                        </Link>
-                      </div>
-
-                      <button
-                        onClick={handleLogout}
-                        className="flex w-full items-center gap-3 border-t border-border/60 px-5 py-3 text-left text-sm text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors"
-                      >
-                        <LogOut size={16} /> Sign out
-                      </button>
-                    </motion.div>
+            <div ref={userMenuRef} className="relative">
+              <button
+                onClick={() => setUserMenuOpen((o) => !o)}
+                className={cn(
+                  "h-10 flex items-center gap-2 rounded-full py-1 pl-3 pr-1.5 transition-all focus-visible:ring-2 focus-visible:ring-accent",
+                  isHeroTransparent
+                    ? "border border-white/20 bg-white/10 text-white hover:bg-white/20 backdrop-blur-md"
+                    : "border border-border/70 bg-card/60 text-foreground hover:bg-secondary"
+                )}
+                aria-label="Account menu"
+              >
+                <Menu size={15} className={isHeroTransparent ? "text-white/80" : "text-foreground/75"} />
+                <span
+                  className={cn(
+                    "grid h-7 w-7 place-items-center rounded-full text-xs font-semibold shadow-sm",
+                    isHeroTransparent ? "bg-white text-black" : "bg-foreground text-background"
                   )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <div className="hidden sm:flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="rounded-full px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
                 >
-                  Sign in
-                </Link>
-                <Link
-                  to="/register"
-                  className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-transform hover:scale-[1.03] active:scale-95 shadow-sm"
-                >
-                  Join Haven
-                </Link>
-              </div>
-            )}
+                  {(user?.full_name || user?.email || "G").charAt(0).toUpperCase()}
+                </span>
+              </button>
 
-            {/* MOBILE HAMBURGER BUTTON */}
+              <AnimatePresence>
+                {userMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="absolute right-0 mt-2 w-72 overflow-hidden rounded-[20px] border border-border/80 bg-popover shadow-2xl z-50 p-1.5"
+                  >
+                    {isAuthenticated ? (
+                      <>
+                        <div className="px-4 py-3 border-b border-border/60">
+                          <p className="truncate text-sm font-semibold text-foreground">
+                            {user?.full_name || "Guest Traveler"}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+                        </div>
+
+                        <div className="py-1">
+                          <Link
+                            to="/dashboard"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
+                          >
+                            <CalendarCheck size={16} /> My Trips
+                          </Link>
+                          <Link
+                            to="/messages"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center justify-between rounded-xl px-4 py-2.5 text-sm text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
+                          >
+                            <span className="flex items-center gap-3">
+                              <MessageSquare size={16} /> Messages
+                            </span>
+                            {unreadMessages > 0 && (
+                              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1.5 text-[11px] font-bold text-accent-foreground">
+                                {unreadMessages}
+                              </span>
+                            )}
+                          </Link>
+                          <Link
+                            to="/dashboard?tab=wishlists"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
+                          >
+                            <Heart size={16} /> Wishlists
+                          </Link>
+                          <Link
+                            to="/help"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
+                          >
+                            <HelpCircle size={16} /> Help Center
+                          </Link>
+                          {(user?.role === "host" || user?.role === "admin") && (
+                            <Link
+                              to="/host"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
+                            >
+                              <LayoutDashboard size={16} /> Host dashboard
+                            </Link>
+                          )}
+                        </div>
+
+                        {/* Switch demo user section */}
+                        <div className="border-t border-border/60 bg-muted/20 rounded-xl px-2.5 py-2 my-1">
+                          <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            Switch demo user
+                          </p>
+                          <button
+                            type="button"
+                            onClick={handleGuestSwitch}
+                            className={cn(
+                              "flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-xs transition-colors",
+                              user && user.role !== "host"
+                                ? "bg-secondary font-semibold text-foreground"
+                                : "text-foreground/75 hover:bg-secondary hover:text-foreground"
+                            )}
+                          >
+                            <span className="flex items-center gap-2">
+                              <UserIcon size={14} className="text-champagne-dark dark:text-champagne" /> Eleanor Vance (Guest)
+                            </span>
+                            {user && user.role !== "host" && (
+                              <span className="text-[10px] font-semibold text-champagne-dark dark:text-champagne-light">Active</span>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleHostSwitch}
+                            className={cn(
+                              "mt-0.5 flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-xs transition-colors",
+                              user?.role === "host"
+                                ? "bg-secondary font-semibold text-foreground"
+                                : "text-foreground/75 hover:bg-secondary hover:text-foreground"
+                            )}
+                          >
+                            <span className="flex items-center gap-2">
+                              <Building2 size={14} className="text-champagne-dark dark:text-champagne" /> Marcus Reed (Host)
+                            </span>
+                            {user?.role === "host" && (
+                              <span className="text-[10px] font-semibold text-champagne-dark dark:text-champagne-light">Active</span>
+                            )}
+                          </button>
+                          {onStartTour && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setUserMenuOpen(false);
+                                onStartTour();
+                              }}
+                              className="mt-0.5 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-foreground/75 hover:bg-secondary hover:text-foreground transition-colors"
+                            >
+                              <Sparkles size={14} className="text-champagne-dark dark:text-champagne" /> Guided Product Tour
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={handleResetData}
+                            className="mt-0.5 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                          >
+                            <RotateCcw size={13} /> Reset Demo Data
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-3 rounded-xl border-t border-border/60 px-4 py-2.5 text-left text-sm text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors"
+                        >
+                          <LogOut size={16} /> Sign out
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="p-3">
+                          <p className="text-sm font-semibold text-foreground">Welcome to Haven</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Explore curated luxury stays and experiences.</p>
+                          <div className="mt-3 flex flex-col gap-2">
+                            <Link
+                              to="/login"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="flex h-10 items-center justify-center rounded-xl bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity"
+                            >
+                              Sign in
+                            </Link>
+                            <Link
+                              to="/register"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="flex h-10 items-center justify-center rounded-xl border border-border text-sm font-medium hover:bg-secondary transition-colors"
+                            >
+                              Join Haven
+                            </Link>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-border/60 bg-muted/20 rounded-xl px-2.5 py-2 m-1">
+                          <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            Switch demo user
+                          </p>
+                          <button
+                            type="button"
+                            onClick={handleGuestSwitch}
+                            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+                          >
+                            <UserIcon size={14} className="text-champagne-dark dark:text-champagne" /> Eleanor Vance (Guest)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleHostSwitch}
+                            className="mt-0.5 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+                          >
+                            <Building2 size={14} className="text-champagne-dark dark:text-champagne" /> Marcus Reed (Host)
+                          </button>
+                          {onStartTour && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setUserMenuOpen(false);
+                                onStartTour();
+                              }}
+                              className="mt-0.5 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+                            >
+                              <Sparkles size={14} className="text-champagne-dark dark:text-champagne" /> Guided Product Tour
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* MOBILE CONTROLS (Below 1024px: Logo on left, Bell & Menu button on right only) */}
+          <div className="flex items-center gap-2 lg:hidden z-10">
+            {/* Bell button on mobile */}
             <button
-              onClick={() => setMobileOpen((o) => !o)}
-              className="grid h-10 w-10 place-items-center rounded-full border border-border/70 bg-card/60 text-foreground lg:hidden"
-              aria-label="Toggle menu"
+              onClick={() => setNotifOpen((o) => !o)}
+              className={cn(
+                "relative grid h-10 w-10 place-items-center rounded-full transition-colors",
+                isHeroTransparent
+                  ? "border border-white/20 bg-white/10 text-white hover:bg-white/20 backdrop-blur-md"
+                  : "border border-border/70 bg-card/60 text-foreground hover:bg-secondary"
+              )}
+              aria-label="Notifications"
             >
-              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+              <Bell size={18} />
+              {unreadNotifsCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground shadow-sm">
+                  {unreadNotifsCount}
+                </span>
+              )}
+            </button>
+
+            {/* Menu button on mobile */}
+            <button
+              onClick={() => setMobileOpen(true)}
+              className={cn(
+                "grid h-10 w-10 place-items-center rounded-full transition-colors",
+                isHeroTransparent
+                  ? "border border-white/20 bg-white/10 text-white hover:bg-white/20 backdrop-blur-md"
+                  : "border border-border/70 bg-card/60 text-foreground hover:bg-secondary"
+              )}
+              aria-label="Open menu"
+            >
+              <Menu size={20} />
             </button>
           </div>
         </div>
       </header>
 
-      {/* FULL-SCREEN MOBILE SLIDE-IN DRAWER */}
+      {/* FULL-SCREEN MOBILE SLIDE-IN PANEL */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -653,124 +933,195 @@ export default function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
-            className="fixed inset-0 z-50 flex flex-col bg-background/95 backdrop-blur-2xl lg:hidden p-6 overflow-y-auto"
+            onTouchStart={(e) => {
+              touchStartXRef.current = e.touches[0].clientX;
+            }}
+            onTouchEnd={(e) => {
+              if (touchStartXRef.current !== null) {
+                const diff = e.changedTouches[0].clientX - touchStartXRef.current;
+                if (diff > 75) {
+                  setMobileOpen(false);
+                }
+                touchStartXRef.current = null;
+              }
+            }}
+            className="fixed inset-0 z-50 flex flex-col bg-background/98 backdrop-blur-2xl lg:hidden p-6 overflow-y-auto"
           >
-            {/* Header bar */}
-            <div className="flex items-center justify-between pb-6 border-b border-border/60">
+            {/* Mobile Header Bar */}
+            <div className="flex items-center justify-between pb-6 border-b border-border/60 shrink-0">
               <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-2">
-                <span className="grid h-8 w-8 place-items-center rounded-lg bg-foreground text-background font-heading font-semibold">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-foreground text-background font-heading font-semibold text-lg">
                   H
                 </span>
-                <span className="font-heading text-xl font-medium tracking-tight">Haven</span>
+                <span className="font-heading text-2xl font-medium tracking-tight">Haven</span>
               </Link>
               <button
                 onClick={() => setMobileOpen(false)}
-                className="grid h-10 w-10 place-items-center rounded-full border border-border"
+                className="grid h-11 w-11 place-items-center rounded-full border border-border hover:bg-secondary transition-colors"
                 aria-label="Close menu"
               >
                 <X size={20} />
               </button>
             </div>
 
-            {/* Staggered Navigation Links */}
-            <div className="mt-8 flex flex-col space-y-1">
+            {/* Large Staggered Links */}
+            <div className="mt-6 flex flex-col space-y-1">
               {[
                 { label: "Stays", to: "/explore" },
                 { label: "Experiences", to: "/experiences" },
                 { label: "Destinations", to: "/destinations" },
-                { label: "Concierge", to: "/concierge" },
-                { label: "Deals & Privileges", to: "/deals" },
-                { label: "Journal", to: "/journal" },
-                { label: "Host a Sanctuary", to: "/host" },
-                { label: "Help Center", to: "/help" },
-              ].map((link, idx) => (
+              ].map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
                   onClick={() => setMobileOpen(false)}
-                  className="flex h-12 items-center justify-between rounded-2xl px-4 font-heading text-xl font-medium text-foreground transition-colors hover:bg-secondary"
+                  className="flex min-h-[48px] items-center justify-between rounded-2xl px-4 font-heading text-2xl font-medium text-foreground transition-colors hover:bg-secondary active:scale-[0.99]"
                 >
                   <span>{link.label}</span>
-                  <ArrowRight size={16} className="text-muted-foreground" />
+                  <ArrowRight size={18} className="text-muted-foreground" />
+                </Link>
+              ))}
+
+              <div className="my-3 border-t border-border/60" />
+
+              {/* User / Trips links */}
+              {[
+                { label: "My Trips", to: "/dashboard", icon: CalendarCheck },
+                { label: "Messages", to: "/messages", icon: MessageSquare, badge: unreadMessages },
+                { label: "Wishlists", to: "/dashboard?tab=wishlists", icon: Heart },
+                { label: "Help Center", to: "/help", icon: HelpCircle },
+                ...((user?.role === "host" || user?.role === "admin")
+                  ? [{ label: "Host dashboard", to: "/host", icon: LayoutDashboard }]
+                  : []),
+              ].map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex min-h-[44px] items-center justify-between rounded-xl px-4 text-base font-medium text-foreground/80 transition-colors hover:bg-secondary"
+                >
+                  <span className="flex items-center gap-3">
+                    <link.icon size={18} /> {link.label}
+                  </span>
+                  {link.badge && link.badge > 0 ? (
+                    <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">
+                      {link.badge}
+                    </span>
+                  ) : (
+                    <ArrowRight size={14} className="text-muted-foreground/60" />
+                  )}
                 </Link>
               ))}
             </div>
 
-            {/* Bottom Sheet for User / Account */}
-            <div className="mt-auto pt-8 border-t border-border/60">
-              {isAuthenticated ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 px-2 mb-3">
-                    <span className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-sm font-semibold text-background">
-                      {(user?.full_name || user?.email || "U").charAt(0).toUpperCase()}
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{user?.full_name || "Account"}</p>
-                      <p className="text-xs text-muted-foreground">{user?.email}</p>
-                    </div>
-                  </div>
-                  <Link
-                    to="/dashboard"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex h-11 items-center gap-3 rounded-2xl px-4 text-sm font-medium hover:bg-secondary"
-                  >
-                    <CalendarCheck size={16} /> My Trips
-                  </Link>
-                  <Link
-                    to="/messages"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex h-11 items-center justify-between rounded-2xl px-4 text-sm font-medium hover:bg-secondary"
-                  >
-                    <span className="flex items-center gap-3">
-                      <MessageSquare size={16} /> Messages
-                    </span>
-                    {unreadMessages > 0 && (
-                      <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">
-                        {unreadMessages}
-                      </span>
-                    )}
-                  </Link>
+            {/* Bottom Section */}
+            <div className="mt-auto pt-6 border-t border-border/60">
+              {/* Switch Demo User (Mobile) */}
+              <div className="mb-4 rounded-2xl border border-border/70 bg-card/60 p-3">
+                <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Switch demo user
+                </p>
+                <button
+                  type="button"
+                  onClick={handleGuestSwitch}
+                  className={cn(
+                    "flex min-h-[44px] w-full items-center justify-between rounded-xl px-3 py-2 text-xs transition-colors",
+                    user && user.role !== "host"
+                      ? "bg-secondary font-semibold text-foreground"
+                      : "text-foreground/75 hover:bg-secondary hover:text-foreground"
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <UserIcon size={15} className="text-champagne-dark dark:text-champagne" /> Eleanor Vance (Guest)
+                  </span>
+                  {user && user.role !== "host" && (
+                    <span className="text-[10px] font-semibold text-champagne-dark dark:text-champagne-light">Active</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleHostSwitch}
+                  className={cn(
+                    "mt-1 flex min-h-[44px] w-full items-center justify-between rounded-xl px-3 py-2 text-xs transition-colors",
+                    user?.role === "host"
+                      ? "bg-secondary font-semibold text-foreground"
+                      : "text-foreground/75 hover:bg-secondary hover:text-foreground"
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <Building2 size={15} className="text-champagne-dark dark:text-champagne" /> Marcus Reed (Host)
+                  </span>
+                  {user?.role === "host" && (
+                    <span className="text-[10px] font-semibold text-champagne-dark dark:text-champagne-light">Active</span>
+                  )}
+                </button>
+                {onStartTour && (
                   <button
+                    type="button"
                     onClick={() => {
                       setMobileOpen(false);
-                      handleLogout();
+                      onStartTour();
                     }}
-                    className="flex h-11 w-full items-center gap-3 rounded-2xl px-4 text-left text-sm font-medium text-destructive hover:bg-secondary"
+                    className="mt-1 flex min-h-[44px] w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-foreground/75 hover:bg-secondary hover:text-foreground transition-colors"
                   >
-                    <LogOut size={16} /> Sign out
+                    <Sparkles size={15} className="text-champagne-dark dark:text-champagne" /> Guided Product Tour
                   </button>
-                </div>
+                )}
+                <button
+                  type="button"
+                  onClick={handleResetData}
+                  className="mt-1 flex min-h-[44px] w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                >
+                  <RotateCcw size={14} /> Reset Demo Data
+                </button>
+              </div>
+
+              {/* Auth links or Sign out */}
+              {isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    handleLogout();
+                  }}
+                  className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-medium text-destructive hover:bg-secondary transition-colors"
+                >
+                  <LogOut size={16} /> Sign out
+                </button>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="grid grid-cols-2 gap-3 mb-4">
                   <Link
                     to="/login"
                     onClick={() => setMobileOpen(false)}
-                    className="flex h-12 items-center justify-center rounded-full border border-border font-medium text-sm"
+                    className="flex min-h-[44px] items-center justify-center rounded-full border border-border font-medium text-sm hover:bg-secondary"
                   >
                     Sign in
                   </Link>
                   <Link
                     to="/register"
                     onClick={() => setMobileOpen(false)}
-                    className="flex h-12 items-center justify-center rounded-full bg-foreground text-background font-medium text-sm"
+                    className="flex min-h-[44px] items-center justify-center rounded-full bg-foreground text-background font-medium text-sm"
                   >
                     Join Haven
                   </Link>
                 </div>
               )}
 
-              {/* Currency & Language Button in mobile */}
-              <div className="mt-6 flex items-center justify-between px-2 pt-4 border-t border-border/40 text-xs text-muted-foreground">
+              {/* Mobile Bottom Utilities (Currency/Language & ThemeToggle) */}
+              <div className="mt-4 flex items-center justify-between pt-4 border-t border-border/40">
                 <button
                   onClick={() => {
                     setMobileOpen(false);
                     setLangModalOpen(true);
                   }}
-                  className="flex items-center gap-1.5 hover:text-foreground"
+                  className="flex min-h-[44px] items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"
                 >
-                  <Globe size={14} /> {selectedCurrency} · {selectedLanguage.toUpperCase()}
+                  <Globe size={16} /> {selectedCurrency} · {selectedLanguage.toUpperCase()}
                 </button>
-                <span>Haven Luxury Collection</span>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Theme</span>
+                  <ThemeToggle className="h-10 w-10 border-border/70" />
+                </div>
               </div>
             </div>
           </motion.div>

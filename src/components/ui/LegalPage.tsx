@@ -24,7 +24,7 @@ interface LegalPageProps {
 export default function LegalPage({ title, description, updated, sections, note, breadcrumbs, image }: LegalPageProps) {
   useSeo(title, description);
   return (
-    <div className="pt-16">
+    <div>
       <PageHero
         breadcrumbs={breadcrumbs}
         title={title}
@@ -32,11 +32,11 @@ export default function LegalPage({ title, description, updated, sections, note,
         image={image || GEN_IMAGES.tuscany}
       />
       {note && (
-        <div className="mx-auto max-w-5xl px-5 pt-8 sm:px-8">
+        <div className="container-haven pt-6 sm:pt-8">
           <div className="rounded-2xl border border-accent/30 bg-accent/5 p-4 text-sm text-foreground/80">{note}</div>
         </div>
       )}
-      <div className="mx-auto grid max-w-5xl gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[220px_1fr]">
+      <div className="container-haven grid gap-8 section-padding lg:grid-cols-[220px_1fr] lg:gap-10">
         <aside className="hidden lg:block">
           <nav className="sticky top-24 space-y-1 text-sm">
             {sections.map((s) => (

@@ -19,7 +19,7 @@ const DESTINATIONS: DestinationCardData[] = [
     tagline: "Coral atolls, limestone lagoons, and seaside seclusion",
     count: "14 private villas",
     region: "Central Visayas",
-    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80"
+    image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: "palawan",
@@ -83,18 +83,18 @@ export default function PopularDestinations() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   return (
-    <section className="relative overflow-hidden bg-background py-24 sm:py-28 lg:py-32">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+    <section className="relative overflow-hidden bg-background section-padding">
+      <div className="container-haven">
         <SectionReveal>
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end section-header">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-champagne/30 bg-champagne/10 px-3.5 py-1 text-xs font-medium tracking-wide text-champagne-dark dark:text-champagne-light">
                 <Sparkles size={12} /> Coveted Escapes
               </span>
-              <h2 className="mt-3 font-heading text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              <h2 className="mt-2.5 font-heading text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
                 Popular Destinations
               </h2>
-              <p className="mt-3 max-w-xl text-base text-muted-foreground sm:text-lg">
+              <p className="mt-3.5 max-w-xl text-base text-muted-foreground sm:text-lg leading-relaxed">
                 Explore our most requested regions — hand-curated stays surrounded by extraordinary natural beauty and cultural stillness.
               </p>
             </div>
@@ -110,7 +110,7 @@ export default function PopularDestinations() {
         </SectionReveal>
 
         {/* 8-CARD RESPONSIVE GRID */}
-        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           {DESTINATIONS.map((dest, index) => {
             const isHovered = hoveredId === dest.id;
             const isAnyHovered = hoveredId !== null;

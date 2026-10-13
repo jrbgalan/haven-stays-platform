@@ -62,7 +62,7 @@ export default function RecentlyViewed({ currentListingId, className = "" }: Rec
   if (loading || items.length === 0) return null;
 
   return (
-    <div className={`mt-12 rounded-3xl border border-border/70 bg-secondary/30 p-6 sm:p-8 ${className}`}>
+    <div className={`mt-8 sm:mt-10 rounded-3xl border border-border/70 bg-secondary/30 p-6 sm:p-8 ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock size={16} className="text-champagne-dark dark:text-champagne-light" />

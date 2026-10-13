@@ -46,7 +46,7 @@ export default function Cancellation() {
   }, [checkIn, cancelDate, total, policy]);
 
   return (
-    <div className="pt-16">
+    <div>
       <PageHero
         eyebrow="Cancellation"
         title="Plans change. Here's how refunds work."
@@ -56,8 +56,8 @@ export default function Cancellation() {
       />
 
       {/* Policy cards */}
-      <section className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
-        <div className="grid gap-5 lg:grid-cols-3">
+      <section className="container-haven section-padding">
+        <div className="grid gap-4 lg:grid-cols-3 lg:gap-6">
           {POLICIES.map((p, i) => (
             <SectionReveal key={p.id} delay={i * 0.05}>
               <div className={`h-full rounded-2xl border bg-card p-6 ${policy === p.id ? "border-foreground shadow-luxe" : "border-border"}`}>
@@ -86,10 +86,12 @@ export default function Cancellation() {
 
       {/* Refund calculator */}
       <section className="border-y border-border bg-secondary/40">
-        <div className="mx-auto max-w-3xl px-5 py-12 sm:px-8">
+        <div className="container-haven max-w-3xl section-padding">
           <SectionReveal>
-            <h2 className="flex items-center gap-2 font-heading text-3xl font-medium tracking-tight"><RotateCcw size={22} className="text-champagne" /> Refund calculator</h2>
-            <p className="mt-2 text-muted-foreground">Pick a policy, your check-in, and when you'd cancel to estimate your refund.</p>
+            <div className="section-header">
+              <h2 className="flex items-center gap-2 font-heading text-3xl font-medium tracking-tight"><RotateCcw size={22} className="text-champagne" /> Refund calculator</h2>
+              <p className="mt-3.5 text-muted-foreground">Pick a policy, your check-in, and when you'd cancel to estimate your refund.</p>
+            </div>
           </SectionReveal>
           <SectionReveal delay={0.05}>
             <div className="mt-6 grid gap-4 rounded-2xl border border-border bg-card p-6 sm:grid-cols-2">
@@ -134,7 +136,7 @@ export default function Cancellation() {
       </section>
 
       {/* Info sections */}
-      <section className="mx-auto max-w-3xl px-5 py-12 sm:px-8">
+      <section className="container-haven max-w-3xl section-padding">
         <div className="space-y-8">
           {[
             { t: "How to cancel a booking", p: "Open My Trips, find your booking, and choose Cancel. The estimated refund is shown before you confirm, based on the listing's policy and how far ahead you're cancelling." },

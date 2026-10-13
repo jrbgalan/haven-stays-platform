@@ -107,15 +107,15 @@ export default function ListingDetail() {
   };
 
   return (
-    <div className="pt-16">
-      <div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8">
+    <div className="pt-20 pb-20">
+      <div className="container-haven pt-4 sm:pt-6">
         <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft size={15} /> Back to all stays
         </Link>
       </div>
 
       {/* Header */}
-      <div className="mx-auto max-w-7xl px-5 pt-5 sm:px-8">
+      <div className="container-haven pt-4 sm:pt-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -151,7 +151,7 @@ export default function ListingDetail() {
       </div>
 
       {/* Bento gallery */}
-      <div className="mx-auto mt-6 max-w-7xl px-5 sm:px-8">
+      <div className="container-haven mt-5 sm:mt-6">
         <div className="grid grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-3xl sm:gap-3" style={{ height: "clamp(320px, 48vh, 520px)" }}>
           <button onClick={() => setLightbox(0)} className="group relative col-span-4 row-span-2 sm:col-span-2">
             <SmartImage src={images[0]} alt={listing.title} className="h-full w-full" imgClassName="group-hover:scale-105" />
@@ -169,7 +169,7 @@ export default function ListingDetail() {
       </div>
 
       {/* Body */}
-      <div className="mx-auto mt-12 grid max-w-7xl gap-12 px-5 pb-32 sm:px-8 lg:grid-cols-3">
+      <div className="container-haven mt-8 sm:mt-10 grid gap-8 pb-16 lg:grid-cols-3 lg:gap-12">
         <div className="lg:col-span-2">
           {/* Host + quick facts */}
           <SectionReveal>

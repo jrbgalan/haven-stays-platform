@@ -84,27 +84,27 @@ export default function Deals() {
   };
 
   return (
-    <div className="min-h-screen pt-20">
+    <div>
       {/* HERO */}
-      <section className="relative overflow-hidden bg-background py-20 sm:py-28 lg:py-32">
+      <section className="relative overflow-hidden bg-background pt-24 pb-8 md:pt-28 md:pb-12 lg:pb-14">
         <div className="absolute inset-0 film-grain" />
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <div className="container-haven">
           <SectionReveal>
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-champagne/30 bg-champagne/10 px-4 py-1.5 text-xs font-medium tracking-wide text-champagne-dark dark:text-champagne-light">
                 <Tag size={13} /> Exclusive Privileges
               </span>
-              <h1 className="mt-5 font-heading text-4xl font-medium tracking-tight sm:text-5xl lg:text-6xl text-foreground">
+              <h1 className="mt-2.5 font-heading text-4xl font-medium tracking-tight sm:text-5xl lg:text-6xl text-foreground">
                 Seasonal Privileges & Private Offers
               </h1>
-              <p className="mt-5 max-w-2xl text-lg text-muted-foreground leading-relaxed">
+              <p className="mt-3.5 max-w-2xl text-base sm:text-lg text-muted-foreground leading-relaxed">
                 Hand-curated value for Haven guests. Reserved perks, complimentary nights, and bespoke resort credits for extraordinary getaways.
               </p>
             </div>
           </SectionReveal>
 
           {/* PRIVILEGES BAR */}
-          <SectionReveal delay={0.1} className="mt-12">
+          <SectionReveal delay={0.1} className="mt-8 sm:mt-10">
             <div className="grid grid-cols-2 gap-4 rounded-3xl border border-border/80 bg-card p-6 shadow-luxe md:grid-cols-4">
               {[
                 { title: "Complimentary Breakfast", desc: "Farm-to-table breakfast included with every partner villa" },
@@ -125,8 +125,8 @@ export default function Deals() {
       </section>
 
       {/* OFFERS LIST */}
-      <section className="mx-auto max-w-7xl px-5 pb-24 sm:px-8 sm:pb-32">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <section className="container-haven section-padding-b">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
           {DEALS.map((deal, idx) => (
             <SectionReveal key={deal.id} delay={idx * 0.08}>
               <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-border/70 bg-card shadow-luxe transition-all duration-300 hover:shadow-luxe-lg">

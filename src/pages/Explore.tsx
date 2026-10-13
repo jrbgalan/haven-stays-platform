@@ -416,10 +416,10 @@ export default function Explore() {
   const sorters = SORTS_MAP[productType] || SORTS_MAP.default;
 
   return (
-    <div className="min-h-screen pt-20">
+    <div className="pt-20 pb-16">
       {/* 1. TOP MULTI-PRODUCT PRODUCT TAB BAR */}
       <div className="border-b border-border/70 bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+        <div className="container-haven py-3">
           <div className="flex items-center overflow-x-auto no-scrollbar gap-1.5 py-1">
             {PRODUCT_TABS.map((tab) => {
               const isActive = productType === tab.id;
@@ -455,7 +455,7 @@ export default function Explore() {
       </div>
 
       {/* 2. MAIN SEARCH & RESULTS WORKSPACE */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="container-haven section-padding-b pt-4 sm:pt-6">
         {/* Top Control Bar: Search Input, Sorter, Filter Button */}
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between border-b border-border/60 pb-6">
           <div className="relative flex-1 max-w-md">
@@ -645,7 +645,7 @@ export default function Explore() {
 
         {/* 3. RESULTS DISPLAY */}
         {loading ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <ListingCardSkeleton key={i} />
             ))}
@@ -694,7 +694,7 @@ export default function Explore() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
                   {listings.slice(0, 3).map((listing, i) => (
                     <ListingCard
                       key={`suggested-${listing.id}`}
@@ -716,8 +716,8 @@ export default function Explore() {
               <div
                 className={
                   view === "grid"
-                    ? "grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
-                    : "flex flex-col gap-6"
+                    ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6"
+                    : "flex flex-col gap-4 lg:gap-6"
                 }
               >
                 {(results.items as Listing[]).map((listing, i) => (

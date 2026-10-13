@@ -163,27 +163,27 @@ export default function Experiences() {
     : EXPERIENCES.filter((e) => e.category === selectedCat);
 
   return (
-    <div className="min-h-screen pt-20">
+    <div>
       {/* HERO */}
-      <section className="relative overflow-hidden bg-background py-20 sm:py-28 lg:py-32">
+      <section className="relative overflow-hidden bg-background pt-24 pb-8 md:pt-28 md:pb-12 lg:pb-14">
         <div className="absolute inset-0 film-grain" />
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <div className="container-haven">
           <SectionReveal>
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-champagne/30 bg-champagne/10 px-4 py-1.5 text-xs font-medium tracking-wide text-champagne-dark dark:text-champagne-light">
                 <Sparkles size={13} /> Tailored Journeys
               </span>
-              <h1 className="mt-5 font-heading text-4xl font-medium tracking-tight sm:text-5xl lg:text-6xl text-foreground">
+              <h1 className="mt-2.5 font-heading text-4xl font-medium tracking-tight sm:text-5xl lg:text-6xl text-foreground">
                 Signature Experiences, Orchestrated by Haven
               </h1>
-              <p className="mt-5 max-w-2xl text-lg text-muted-foreground leading-relaxed">
+              <p className="mt-3.5 max-w-2xl text-base sm:text-lg text-muted-foreground leading-relaxed">
                 Private yacht charters, sommelier-led vineyard dinners, and secluded alpine expeditions — curated by our global concierge to deepen every stay.
               </p>
             </div>
           </SectionReveal>
 
           {/* CATEGORY FILTER TABS */}
-          <SectionReveal delay={0.1} className="mt-12">
+          <SectionReveal delay={0.1} className="mt-8 sm:mt-10">
             <div className="flex flex-wrap items-center gap-2 border-b border-border/60 pb-4">
               {CATEGORIES.map((cat) => (
                 <button
@@ -204,8 +204,8 @@ export default function Experiences() {
       </section>
 
       {/* EXPERIENCES GRID */}
-      <section className="mx-auto max-w-7xl px-5 pb-24 sm:px-8 sm:pb-32">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <section className="container-haven section-padding-b">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {filtered.map((exp, idx) => (
             <SectionReveal key={exp.id} delay={idx * 0.06}>
               <div className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border/70 bg-card shadow-luxe transition-all duration-300 hover:-translate-y-1 hover:shadow-luxe-lg">

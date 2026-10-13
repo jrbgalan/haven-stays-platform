@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 
 function HostLanding() {
   return (
-    <div className="pt-16">
+    <div>
       <PageHero
         eyebrow="Host with Haven"
         title="Share your sanctuary."
@@ -42,18 +42,20 @@ function HostLanding() {
       />
 
       {/* Perks / Benefits */}
-      <section className="mx-auto max-w-5xl px-5 py-16 sm:px-8">
+      <section className="container-haven section-padding">
         <SectionReveal>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne">Why host with Haven</p>
-          <h2 className="mt-3 font-heading text-3xl font-medium tracking-tight sm:text-4xl">
-            Thoughtful hosting for exceptional homes.
-          </h2>
-          <p className="mt-4 max-w-2xl text-muted-foreground">
-            We connect properties of character with travelers who value design, quiet, and care. No mass market noise — just discerning guests.
-          </p>
+          <div className="section-header">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne">Why host with Haven</p>
+            <h2 className="mt-2.5 font-heading text-3xl font-medium tracking-tight sm:text-4xl">
+              Thoughtful hosting for exceptional homes.
+            </h2>
+            <p className="mt-3.5 max-w-2xl text-muted-foreground">
+              We connect properties of character with travelers who value design, quiet, and care. No mass market noise — just discerning guests.
+            </p>
+          </div>
         </SectionReveal>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           {[
             {
               icon: ShieldCheck,
@@ -90,14 +92,16 @@ function HostLanding() {
       </section>
 
       {/* 3 Step Journey */}
-      <section className="border-y border-border bg-secondary/40 py-16">
-        <div className="mx-auto max-w-5xl px-5 sm:px-8">
+      <section className="border-y border-border bg-secondary/40">
+        <div className="container-haven section-padding">
           <SectionReveal>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne">Simple onboarding</p>
-            <h2 className="mt-3 font-heading text-3xl font-medium tracking-tight sm:text-4xl">How it works</h2>
+            <div className="section-header">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne">Simple onboarding</p>
+              <h2 className="mt-2.5 font-heading text-3xl font-medium tracking-tight sm:text-4xl">How it works</h2>
+            </div>
           </SectionReveal>
 
-          <div className="mt-10 grid gap-8 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-3 lg:gap-6">
             {[
               {
                 step: "01",
@@ -128,7 +132,7 @@ function HostLanding() {
       </section>
 
       {/* Call to action */}
-      <section className="mx-auto max-w-5xl px-5 py-20 sm:px-8 text-center">
+      <section className="container-haven section-padding text-center">
         <SectionReveal>
           <div className="rounded-3xl border border-border bg-card p-10 sm:p-16 shadow-sm">
             <h2 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">
@@ -234,7 +238,7 @@ export default function HostDashboard() {
   const revenue = confirmedBookings.reduce((s, b) => s + (b.totalPrice || 0), 0);
 
   return (
-    <div className="pt-16">
+    <div>
       <PageHero
         eyebrow="Host Management"
         title="Host dashboard"
@@ -242,7 +246,7 @@ export default function HostDashboard() {
         breadcrumbs={[{ label: "Home", to: "/" }, { label: "Host with us" }]}
         image={GEN_IMAGES.santorini}
       />
-      <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
+      <div className="container-haven section-padding">
         <p className="text-sm text-muted-foreground">Welcome back. Oversee and optimize your property portfolio.</p>
 
         <div className="mt-8 no-scrollbar flex gap-2 overflow-x-auto">

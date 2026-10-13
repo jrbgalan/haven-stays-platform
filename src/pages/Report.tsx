@@ -86,7 +86,7 @@ export default function Report() {
   const canNext = [!!form.type, !!form.targetId || form.type === "Other" || form.type === "Safety emergency", form.description.trim().length >= 10, true][step];
 
   return (
-    <div className="pt-16">
+    <div>
       <PageHero
         eyebrow="Report a Concern"
         title="Help us keep Haven safe"
@@ -96,14 +96,14 @@ export default function Report() {
       />
 
       {/* Safety banner */}
-      <div className="mx-auto max-w-3xl px-5 pt-8 sm:px-8">
+      <div className="container-haven max-w-3xl pt-6 sm:pt-8">
         <div className="flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-4">
           <ShieldAlert size={20} className="mt-0.5 shrink-0 text-destructive" />
           <p className="text-sm text-foreground/80">If you are in immediate danger, <strong>contact local emergency services first</strong>. This form is reviewed during business hours and is not for emergencies.</p>
         </div>
       </div>
 
-      <div className="mx-auto max-w-3xl px-5 py-10 sm:px-8">
+      <div className="container-haven max-w-3xl section-padding-b pt-6 sm:pt-8">
         {ref ? (
           <SectionReveal>
             <div className="rounded-2xl border border-border bg-card p-8 text-center">

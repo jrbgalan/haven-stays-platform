@@ -32,7 +32,7 @@ const TEAM = [
 export default function About() {
   useSeo("About", "Haven is a curated collection of extraordinary stays, handpicked for the discerning traveler. Our story, values, and team.");
   return (
-    <div className="pt-16">
+    <div>
       <PageHero
         eyebrow="About Haven"
         title="Stay differently."
@@ -41,26 +41,32 @@ export default function About() {
         image={HERO_IMAGE}
       />
 
-      <section className="mx-auto max-w-5xl px-5 py-16 sm:px-8">
+      <section className="container-haven section-padding">
         <SectionReveal>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne">Our story</p>
-          <h2 className="mt-3 max-w-3xl font-heading text-3xl font-medium tracking-tight sm:text-4xl">
-            We started with a simple frustration: the most beautiful places were the hardest to find.
-          </h2>
-          <div className="mt-6 grid gap-6 text-lg leading-relaxed text-foreground/80 sm:grid-cols-2">
+          <div className="section-header">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne-dark dark:text-champagne-light">Our story</p>
+            <h2 className="mt-2.5 max-w-3xl font-heading text-3xl font-medium tracking-tight sm:text-4xl">
+              We started with a simple frustration: the most beautiful places were the hardest to find.
+            </h2>
+          </div>
+          <div className="grid gap-4 lg:gap-6 text-base sm:text-lg leading-relaxed text-foreground/80 sm:grid-cols-2">
             <p>Haven began as a private list shared between friends — the kind of stays you only hear about by word of mouth. A clifftop cabin, a city loft with a story, a beach house that somehow felt like home.</p>
             <p>Today that list is a platform, but the principle hasn't changed. Every stay is chosen, every host is known, and every booking is treated like it matters — because to the person arriving, it does.</p>
           </div>
         </SectionReveal>
       </section>
 
-      <section className="border-y border-border bg-secondary/40">
-        <div className="mx-auto max-w-5xl px-5 py-16 sm:px-8">
-          <SectionReveal><h2 className="font-heading text-3xl font-medium tracking-tight">What we value</h2></SectionReveal>
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="border-y border-border bg-secondary/40 section-padding">
+        <div className="container-haven">
+          <SectionReveal>
+            <div className="section-header">
+              <h2 className="font-heading text-3xl font-medium tracking-tight">What we value</h2>
+            </div>
+          </SectionReveal>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
             {VALUES.map((v, i) => (
               <SectionReveal key={v.t} delay={i * 0.05}>
-                <div className="h-full rounded-2xl border border-border bg-card p-6">
+                <div className="h-full rounded-2xl border border-border bg-card p-6 shadow-sm">
                   <v.icon size={22} className="text-champagne" strokeWidth={1.5} />
                   <h3 className="mt-4 font-heading text-lg font-medium">{v.t}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{v.d}</p>
@@ -71,8 +77,8 @@ export default function About() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-5 py-16 sm:px-8">
-        <div className="grid gap-8 text-center sm:grid-cols-4">
+      <section className="container-haven section-padding">
+        <div className="grid gap-6 text-center sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
           {[
             { v: 1200, s: "+", l: "Stays hosted" },
             { v: 38, s: "", l: "Destinations" },
@@ -80,7 +86,7 @@ export default function About() {
             { v: 4.9, s: "", l: "Avg. guest rating" },
           ].map((c, i) => (
             <SectionReveal key={c.l} delay={i * 0.05}>
-              <div>
+              <div className="pt-4 sm:pt-0">
                 <div className="font-heading text-4xl font-medium tracking-tight sm:text-5xl">
                   <AnimatedCounter value={c.v} suffix={c.s} />
                 </div>
@@ -91,13 +97,17 @@ export default function About() {
         </div>
       </section>
 
-      <section className="border-y border-border bg-secondary/40">
-        <div className="mx-auto max-w-5xl px-5 py-16 sm:px-8">
-          <SectionReveal><h2 className="font-heading text-3xl font-medium tracking-tight">How it works</h2></SectionReveal>
-          <div className="mt-8 grid gap-5 sm:grid-cols-3">
+      <section className="border-y border-border bg-secondary/40 section-padding">
+        <div className="container-haven">
+          <SectionReveal>
+            <div className="section-header">
+              <h2 className="font-heading text-3xl font-medium tracking-tight">How it works</h2>
+            </div>
+          </SectionReveal>
+          <div className="grid gap-4 sm:grid-cols-3 lg:gap-6">
             {STEPS.map((s, i) => (
               <SectionReveal key={s.t} delay={i * 0.05}>
-                <div className="h-full rounded-2xl border border-border bg-card p-6">
+                <div className="h-full rounded-2xl border border-border bg-card p-6 shadow-sm">
                   <div className="flex items-center gap-3">
                     <span className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-background text-sm font-semibold">{i + 1}</span>
                     <s.icon size={20} className="text-champagne" strokeWidth={1.5} />
@@ -111,15 +121,19 @@ export default function About() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-5 py-16 sm:px-8">
-        <SectionReveal><h2 className="font-heading text-3xl font-medium tracking-tight">The people behind the doors</h2></SectionReveal>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="container-haven section-padding">
+        <SectionReveal>
+          <div className="section-header">
+            <h2 className="font-heading text-3xl font-medium tracking-tight">The people behind the doors</h2>
+          </div>
+        </SectionReveal>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {TEAM.map((m, i) => (
             <SectionReveal key={m.name} delay={i * 0.04}>
-              <div className="h-full rounded-2xl border border-border bg-card p-6">
-                <div className="grid h-16 w-16 place-items-center rounded-full bg-secondary font-heading text-2xl font-medium text-foreground/70">{m.name.charAt(0)}</div>
+              <div className="h-full rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <div className="grid h-14 w-14 place-items-center rounded-full bg-secondary font-heading text-xl font-medium text-foreground/70">{m.name.charAt(0)}</div>
                 <h3 className="mt-4 font-heading text-lg font-medium">{m.name}</h3>
-                <p className="text-sm text-champagne">{m.role}</p>
+                <p className="text-sm text-champagne-dark dark:text-champagne-light">{m.role}</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{m.bio}</p>
               </div>
             </SectionReveal>
@@ -128,26 +142,28 @@ export default function About() {
       </section>
 
       {/* Architecture section */}
-      <section className="border-t border-border bg-gradient-to-b from-card/60 via-card to-background py-20">
-        <div className="mx-auto max-w-5xl px-5 sm:px-8">
+      <section className="border-t border-border bg-gradient-to-b from-card/60 via-card to-background section-padding">
+        <div className="container-haven">
           <SectionReveal>
-            <div className="flex items-center gap-2">
-              <span className="h-px w-6 bg-champagne" />
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne">Engineering Foundation</p>
+            <div className="section-header">
+              <div className="flex items-center gap-2">
+                <span className="h-px w-6 bg-champagne" />
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne-dark dark:text-champagne-light">Engineering Foundation</p>
+              </div>
+              <h2 className="mt-2.5 font-heading text-3xl font-medium tracking-tight sm:text-4xl">
+                Clean Architecture & Modular Data-Access
+              </h2>
+              <p className="mt-3.5 max-w-2xl text-base text-muted-foreground leading-relaxed">
+                Haven is engineered with a layered, contract-driven architecture designed to withstand scale and allow seamless API swapping without touching a single component.
+              </p>
             </div>
-            <h2 className="mt-3 font-heading text-3xl font-medium tracking-tight sm:text-4xl">
-              Clean Architecture & Modular Data-Access
-            </h2>
-            <p className="mt-3 max-w-2xl text-base text-muted-foreground">
-              Haven is engineered with a layered, contract-driven architecture designed to withstand scale and allow seamless API swapping without touching a single component.
-            </p>
           </SectionReveal>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
             <SectionReveal delay={0.05}>
               <div className="flex h-full flex-col justify-between rounded-2xl border border-border/80 bg-background/80 p-6 shadow-sm">
                 <div>
-                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark">
+                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark dark:text-champagne-light">
                     Layer 1
                   </span>
                   <h3 className="mt-3 font-heading text-lg font-medium">UI Presentation</h3>
@@ -164,7 +180,7 @@ export default function About() {
             <SectionReveal delay={0.1}>
               <div className="flex h-full flex-col justify-between rounded-2xl border border-border/80 bg-background/80 p-6 shadow-sm">
                 <div>
-                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark">
+                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark dark:text-champagne-light">
                     Layer 2
                   </span>
                   <h3 className="mt-3 font-heading text-lg font-medium">Data-Access Facade</h3>
@@ -181,7 +197,7 @@ export default function About() {
             <SectionReveal delay={0.15}>
               <div className="flex h-full flex-col justify-between rounded-2xl border border-border/80 bg-background/80 p-6 shadow-sm">
                 <div>
-                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark">
+                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark dark:text-champagne-light">
                     Layer 3
                   </span>
                   <h3 className="mt-3 font-heading text-lg font-medium">Provider Contract</h3>
@@ -198,7 +214,7 @@ export default function About() {
             <SectionReveal delay={0.2}>
               <div className="flex h-full flex-col justify-between rounded-2xl border border-border/80 bg-background/80 p-6 shadow-sm">
                 <div>
-                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark">
+                  <span className="inline-block rounded-lg bg-champagne/10 px-2.5 py-1 text-[11px] font-semibold text-champagne-dark dark:text-champagne-light">
                     Layer 4
                   </span>
                   <h3 className="mt-3 font-heading text-lg font-medium">Cache & Resilience</h3>
@@ -215,12 +231,12 @@ export default function About() {
         </div>
       </section>
 
-      <section className="border-t border-border bg-foreground text-background">
-        <div className="mx-auto max-w-5xl px-5 py-16 text-center sm:px-8">
+      <section className="border-t border-border bg-foreground text-background section-padding">
+        <div className="container-haven text-center">
           <SectionReveal>
-            <h2 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">Find your next stay</h2>
-            <p className="mx-auto mt-3 max-w-xl text-background/70">A curated collection is waiting. Start with a feeling, end with an address.</p>
-            <Link to="/explore" className="mt-6 inline-flex items-center rounded-full bg-background px-7 py-3.5 text-sm font-medium text-foreground transition-transform hover:scale-[1.02] active:scale-95">
+            <h2 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl text-background">Find your next stay</h2>
+            <p className="mx-auto mt-3 max-w-xl text-background/70 leading-relaxed">A curated collection is waiting. Start with a feeling, end with an address.</p>
+            <Link to="/explore" className="mt-6 inline-flex items-center rounded-full bg-background px-7 py-3.5 text-sm font-medium text-foreground transition-transform hover:scale-[1.02] active:scale-95 shadow-md">
               Explore stays
             </Link>
           </SectionReveal>

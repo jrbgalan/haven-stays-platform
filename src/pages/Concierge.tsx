@@ -61,7 +61,7 @@ export default function Concierge() {
   };
 
   return (
-    <div className="pt-16">
+    <div>
       <PageHero
         eyebrow="Haven Concierge"
         title="Your trip, handled."
@@ -71,7 +71,7 @@ export default function Concierge() {
       />
 
       {/* AI highlight */}
-      <div className="mx-auto max-w-5xl px-5 pt-10 sm:px-8">
+      <div className="container-haven pt-6 sm:pt-8">
         <SectionReveal>
           <div className="flex flex-col items-start gap-4 rounded-2xl border border-accent/30 bg-accent/5 p-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
@@ -89,8 +89,8 @@ export default function Concierge() {
       </div>
 
       {/* Service cards */}
-      <section className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="container-haven section-padding">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {SERVICES.map((s, i) => (
             <SectionReveal key={s.t} delay={i * 0.04}>
               <div className="group h-full overflow-hidden rounded-2xl border border-border bg-card">
@@ -117,10 +117,12 @@ export default function Concierge() {
 
       {/* Request form */}
       <section id="concierge-form" className="border-t border-border bg-secondary/40">
-        <div className="mx-auto max-w-2xl px-5 py-16 sm:px-8">
+        <div className="container-haven max-w-2xl section-padding">
           <SectionReveal>
-            <h2 className="font-heading text-3xl font-medium tracking-tight">Request a service</h2>
-            <p className="mt-2 text-muted-foreground">Tell us what you'd like and when. We'll confirm within 24 hours.</p>
+            <div className="section-header">
+              <h2 className="font-heading text-3xl font-medium tracking-tight">Request a service</h2>
+              <p className="mt-3.5 text-muted-foreground">Tell us what you'd like and when. We'll confirm within 24 hours.</p>
+            </div>
           </SectionReveal>
 
           {ref ? (

@@ -52,10 +52,10 @@ export default function AppointmentBooking() {
   }, [id]);
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center pt-16"><div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-foreground" /></div>;
+    return <div className="flex items-center justify-center py-24 pt-24"><div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-foreground" /></div>;
   }
   if (!listing) {
-    return <div className="flex min-h-screen flex-col items-center justify-center gap-4 pt-16 text-center"><h1 className="font-heading text-2xl font-medium">Stay not found</h1><Link to="/explore" className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background">Back to explore</Link></div>;
+    return <div className="container-haven flex flex-col items-center justify-center gap-4 py-24 text-center"><h1 className="font-heading text-2xl font-medium">Stay not found</h1><Link to="/explore" className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background">Back to explore</Link></div>;
   }
 
   const dates = Array.from({ length: 14 }).map((_, i) => addDays(todayISO(), i));
@@ -93,14 +93,16 @@ export default function AppointmentBooking() {
   if (confirmed) return <ApptConfirmation appointment={confirmed} listing={listing} />;
 
   return (
-    <div className="pt-16">
-      <div className="mx-auto max-w-2xl px-5 py-8 sm:px-8">
+    <div className="pt-20 pb-16">
+      <div className="container-haven max-w-2xl section-padding">
         <Link to={`/listing/${id}`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft size={15} /> Back to {listing.title}
         </Link>
 
-        <h1 className="mt-6 font-heading text-3xl font-medium tracking-tight sm:text-4xl">Schedule a viewing</h1>
-        <p className="mt-2 text-muted-foreground">Tour {listing.title} in person or over video — your choice.</p>
+        <div className="section-header mt-6">
+          <h1 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">Schedule a viewing</h1>
+          <p className="mt-3.5 text-muted-foreground">Tour {listing.title} in person or over video — your choice.</p>
+        </div>
 
         <div className="mt-6 flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
           <SmartImage src={listing.images?.[0]} alt={listing.title} className="h-14 w-20 rounded-xl" />
@@ -241,8 +243,8 @@ function Input({ icon: Icon, value, onChange, onBlur, error, placeholder, type =
 
 function ApptConfirmation({ appointment, listing }) {
   return (
-    <div className="pt-16">
-      <div className="mx-auto max-w-2xl px-5 py-16 text-center sm:py-24">
+    <div className="pt-20 pb-16">
+      <div className="container-haven max-w-2xl section-padding text-center">
         <motion.div initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", damping: 12, stiffness: 200 }} className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-foreground text-background">
           <PartyPopper size={28} />
         </motion.div>

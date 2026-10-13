@@ -88,7 +88,7 @@ export default function HelpCenter() {
   };
 
   return (
-    <div className="pt-16">
+    <div>
       <PageHero
         eyebrow="Help Center"
         title="How can we help?"
@@ -98,7 +98,7 @@ export default function HelpCenter() {
       />
 
       {/* Search */}
-      <div className="mx-auto max-w-2xl px-5 py-10 sm:px-8">
+      <div className="container-haven max-w-2xl pt-6 sm:pt-8 pb-4">
         <div className="relative">
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search for an answer…" className="w-full rounded-full border border-border bg-card py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-foreground/40 focus:ring-2 focus:ring-accent/20" />
@@ -106,8 +106,8 @@ export default function HelpCenter() {
       </div>
 
       {/* Categories */}
-      <section className="mx-auto max-w-5xl px-5 pb-4 sm:px-8">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <section className="container-haven section-padding-b">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
           {CATEGORIES.map((c, i) => (
             <SectionReveal key={c.t} delay={i * 0.03}>
               <button onClick={() => setQuery(c.t)} className="h-full w-full rounded-2xl border border-border bg-card p-5 text-left transition-colors hover:bg-secondary">
@@ -120,8 +120,12 @@ export default function HelpCenter() {
       </section>
 
       {/* FAQ */}
-      <section className="mx-auto max-w-3xl px-5 py-12 sm:px-8">
-        <SectionReveal><h2 className="font-heading text-3xl font-medium tracking-tight">{query ? `Results (${filtered.length})` : "Frequently asked"}</h2></SectionReveal>
+      <section className="container-haven max-w-3xl section-padding">
+        <SectionReveal>
+          <div className="section-header">
+            <h2 className="font-heading text-3xl font-medium tracking-tight">{query ? `Results (${filtered.length})` : "Frequently asked"}</h2>
+          </div>
+        </SectionReveal>
         <div className="mt-6 divide-y divide-border rounded-2xl border border-border bg-card">
           {filtered.length === 0 ? (
             <p className="p-6 text-sm text-muted-foreground">No matches. Try a different term or contact us below.</p>
@@ -148,7 +152,7 @@ export default function HelpCenter() {
 
       {/* Popular + contact */}
       <section className="border-t border-border bg-secondary/40">
-        <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
+        <div className="container-haven section-padding">
           <div className="grid gap-8 lg:grid-cols-2">
             <SectionReveal>
               <h3 className="flex items-center gap-2 font-heading text-xl font-medium"><BookOpen size={18} className="text-champagne" /> Popular articles</h3>

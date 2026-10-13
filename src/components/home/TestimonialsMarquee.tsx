@@ -203,23 +203,23 @@ function TestimonialCard({ item }: { item: Testimonial }) {
 
 export default function TestimonialsMarquee() {
   return (
-    <section className="relative overflow-hidden border-t border-border/70 bg-secondary/30 py-24 sm:py-28 lg:py-32">
-      <div className="mx-auto max-w-7xl px-5 text-center sm:px-8">
+    <section className="relative overflow-hidden border-t border-border/70 bg-secondary/30 section-padding">
+      <div className="container-haven text-center">
         <SectionReveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-champagne/30 bg-champagne/10 px-3.5 py-1 text-xs font-medium tracking-wide text-champagne-dark dark:text-champagne-light">
             <Sparkles size={12} /> Revered Experiences
           </span>
-          <h2 className="mt-3 font-heading text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+          <h2 className="mt-2.5 font-heading text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
             Loved by Discerning Travelers
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground sm:text-lg">
+          <p className="mx-auto mt-3.5 max-w-xl text-base text-muted-foreground sm:text-lg leading-relaxed">
             Unfiltered reflections from guests who discovered their personal sanctuary with Haven.
           </p>
         </SectionReveal>
       </div>
 
       {/* MARQUEE CONTAINER WITH EDGE FADE MASKS */}
-      <div className="relative mt-14 sm:mt-18">
+      <div className="relative mt-8 sm:mt-10">
         {/* Soft edge gradient scrims */}
         <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-16 sm:w-44 bg-gradient-to-r from-background via-background/80 to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-16 sm:w-44 bg-gradient-to-l from-background via-background/80 to-transparent" />

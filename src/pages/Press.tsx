@@ -103,7 +103,7 @@ export default function Press() {
   };
 
   return (
-    <div className="pt-16">
+    <div>
       <PageHero
         eyebrow="Press & Media"
         title="Press kit"
@@ -112,7 +112,7 @@ export default function Press() {
       />
 
       {/* Featured in */}
-      <section className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
+      <section className="container-haven section-padding">
         <SectionReveal>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne">Featured in</p>
           <div className="mt-5 flex flex-wrap items-center gap-x-10 gap-y-4 opacity-60">
@@ -125,8 +125,12 @@ export default function Press() {
 
       {/* Latest news */}
       <section className="border-y border-border bg-secondary/40">
-        <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
-          <SectionReveal><h2 className="font-heading text-3xl font-medium tracking-tight">Latest news</h2></SectionReveal>
+        <div className="container-haven section-padding">
+          <SectionReveal>
+            <div className="section-header">
+              <h2 className="font-heading text-3xl font-medium tracking-tight">Latest news</h2>
+            </div>
+          </SectionReveal>
           <div className="mt-6 divide-y divide-border">
             {NEWS.map((n, i) => (
               <SectionReveal key={i} delay={i * 0.03}>
@@ -145,8 +149,12 @@ export default function Press() {
       </section>
 
       {/* Brand assets */}
-      <section id="brand-assets" className="mx-auto max-w-5xl px-5 py-12 sm:px-8 scroll-mt-24">
-        <SectionReveal><h2 className="font-heading text-3xl font-medium tracking-tight">Brand assets</h2></SectionReveal>
+      <section id="brand-assets" className="container-haven section-padding scroll-mt-24">
+        <SectionReveal>
+          <div className="section-header">
+            <h2 className="font-heading text-3xl font-medium tracking-tight">Brand assets</h2>
+          </div>
+        </SectionReveal>
         
         {/* Logo Card */}
         <SectionReveal delay={0.05}>
@@ -196,10 +204,12 @@ export default function Press() {
 
       {/* Media contact */}
       <section className="border-t border-border bg-secondary/40">
-        <div className="mx-auto max-w-2xl px-5 py-16 sm:px-8">
+        <div className="container-haven max-w-2xl section-padding">
           <SectionReveal>
-            <h2 className="font-heading text-3xl font-medium tracking-tight">Media contact</h2>
-            <p className="mt-2 text-muted-foreground">For interviews, assets, or press access, reach our team below.</p>
+            <div className="section-header">
+              <h2 className="font-heading text-3xl font-medium tracking-tight">Media contact</h2>
+              <p className="mt-3.5 text-muted-foreground">For interviews, assets, or press access, reach our team below.</p>
+            </div>
           </SectionReveal>
           {sent ? (
             <SectionReveal>

@@ -31,7 +31,7 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-border bg-background">
-      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+      <div className="container-haven pt-16 pb-24 sm:pb-20">
         <SectionReveal>
           {/* Newsletter Section */}
           <div className="relative mb-16 overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-card via-card/80 to-secondary/30 p-8 sm:p-12">
@@ -129,9 +129,9 @@ export default function Footer() {
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Discover</h4>
               <ul className="mt-4 space-y-3 text-sm">
                 <li><Link to="/explore" className="text-foreground/70 hover:text-foreground">All stays</Link></li>
-                <li><Link to="/explore?category=Beachfront" className="text-foreground/70 hover:text-foreground">Beachfront</Link></li>
-                <li><Link to="/explore?category=Villas" className="text-foreground/70 hover:text-foreground">Villas</Link></li>
-                <li><Link to="/explore?category=Cabins" className="text-foreground/70 hover:text-foreground">Cabins</Link></li>
+                <li><Link to="/experiences" className="text-foreground/70 hover:text-foreground">Experiences</Link></li>
+                <li><Link to="/destinations" className="text-foreground/70 hover:text-foreground">Destinations</Link></li>
+                <li><Link to="/deals" className="text-foreground/70 hover:text-foreground">Deals & Privileges</Link></li>
               </ul>
             </div>
             <div>
@@ -139,6 +139,7 @@ export default function Footer() {
               <ul className="mt-4 space-y-3 text-sm">
                 <li><Link to="/about" className="text-foreground/70 hover:text-foreground">About</Link></li>
                 <li><Link to="/concierge" className="text-foreground/70 hover:text-foreground">Concierge</Link></li>
+                <li><Link to="/journal" className="text-foreground/70 hover:text-foreground">Journal</Link></li>
                 <li><Link to="/press" className="text-foreground/70 hover:text-foreground">Press</Link></li>
                 <li><Link to="/host" className="text-foreground/70 hover:text-foreground">Host with us</Link></li>
               </ul>
@@ -146,7 +147,7 @@ export default function Footer() {
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Support</h4>
               <ul className="mt-4 space-y-3 text-sm">
-                <li><Link to="/help" className="text-foreground/70 hover:text-foreground">Help center</Link></li>
+                <li><Link to="/help" className="text-foreground/70 hover:text-foreground">Help Center</Link></li>
                 <li><Link to="/cancellation" className="text-foreground/70 hover:text-foreground">Cancellation</Link></li>
                 <li><Link to="/privacy" className="text-foreground/70 hover:text-foreground">Privacy</Link></li>
                 <li><Link to="/terms" className="text-foreground/70 hover:text-foreground">Terms</Link></li>
@@ -154,7 +155,7 @@ export default function Footer() {
               </ul>
             </div>
           </div>
-          <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground sm:flex-row">
+          <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row">
             <p>© {new Date().getFullYear()} Haven · John Romeo Galan. Crafted as a portfolio flagship.</p>
             <p className="font-heading italic">Stay differently.</p>
           </div>

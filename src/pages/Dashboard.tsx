@@ -1,24 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   CalendarCheck, Clock, X, MapPin, Video, CheckCircle2, CalendarX,
-  Plane, Car, Compass, Sparkles, Building2, Home, Sun, Moon,
+  Plane, Car, Compass, Sparkles, Building2, Home, Sun, Moon, Heart,
   type LucideIcon,
 } from "lucide-react";
 import {
   getBookings,
   getProductBookings,
   getAppointments,
+  getListingById,
   updateBooking,
   updateProductBooking,
   updateAppointment,
 } from "@/services";
 import { useToast } from "@/components/ui/use-toast";
 import SmartImage from "@/components/ui/SmartImage";
+import ListingCard from "@/components/listings/ListingCard";
+import { useFavorites } from "@/lib/FavoritesContext";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Booking, ProductBooking, Appointment } from "@/types/entities";
+import type { Listing } from "@/types/listing";
 
 const STATUS = {
   confirmed: { label: "Confirmed", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400", icon: CheckCircle2 },
@@ -45,7 +49,11 @@ export default function Dashboard() {
     "View and manage your confirmed stays, day use reservations, airport transfers, activities, and viewing appointments."
   );
   const { toast } = useToast();
-  const [tab, setTab] = useState<"trips" | "appts">("trips");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") === "wishlists" ? "wishlists" : searchParams.get("tab") === "appts" ? "appts" : "trips";
+  const [tab, setTab] = useState<"trips" | "appts" | "wishlists">(initialTab);
+  const { favorites } = useFavorites();
+  const [wishlistListings, setWishlistListings] = useState<Listing[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [productBookings, setProductBookings] = useState<ProductBooking[]>([]);
   const [appts, setAppts] = useState<Appointment[]>([]);
@@ -142,22 +150,45 @@ export default function Dashboard() {
   const upcomingAppts = appts.filter((a) => a.date >= today && a.status !== "cancelled");
   const pastAppts = appts.filter((a) => a.date < today || a.status === "cancelled");
 
+  useEffect(() => {
+    const qTab = searchParams.get("tab");
+    if (qTab === "wishlists") setTab("wishlists");
+    else if (qTab === "appts") setTab("appts");
+    else if (qTab === "trips") setTab("trips");
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!favorites.length) {
+      setWishlistListings([]);
+      return;
+    }
+    Promise.all(favorites.map((f) => getListingById(f.listingId).catch(() => null)))
+      .then((res) => setWishlistListings(res.filter(Boolean) as Listing[]))
+      .catch(() => setWishlistListings([]));
+  }, [favorites]);
+
   return (
-    <div className="pt-20 min-h-screen">
-      <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
-        <h1 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">Your Journeys</h1>
-        <p className="mt-2 text-muted-foreground">
-          Stays, flights, transfers, and signature activities all in one place.
-        </p>
+    <div className="pt-20 pb-16">
+      <div className="container-haven max-w-5xl section-padding">
+        <div className="section-header">
+          <h1 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">Your Journeys</h1>
+          <p className="mt-3.5 text-muted-foreground">
+            Stays, flights, transfers, and signature activities all in one place.
+          </p>
+        </div>
 
         <div className="mt-8 inline-flex rounded-full border border-border p-1 bg-card/60 backdrop-blur">
           {[
             { id: "trips", label: "My Trips & Bookings", icon: CalendarCheck, count: upcomingBookings.length },
             { id: "appts", label: "Private Viewings", icon: MapPin, count: upcomingAppts.length },
+            { id: "wishlists", label: "Wishlists", icon: Heart, count: favorites.length },
           ].map((t) => (
             <button
               key={t.id}
-              onClick={() => setTab(t.id as any)}
+              onClick={() => {
+                setTab(t.id as any);
+                setSearchParams({ tab: t.id }, { replace: true });
+              }}
               className={cn(
                 "flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-colors",
                 tab === t.id ? "bg-foreground text-background font-semibold" : "text-foreground/75 hover:bg-secondary"
@@ -229,7 +260,7 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-        ) : (
+        ) : tab === "appts" ? (
           <div className="mt-8 space-y-10">
             <div>
               <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -244,6 +275,32 @@ export default function Dashboard() {
                 <div className="grid gap-4">
                   {upcomingAppts.map((a) => (
                     <ApptCard key={a.id} item={a} onCancel={() => cancelAppt(a.id)} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-8 space-y-10">
+            <div>
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Saved Sanctuaries ({wishlistListings.length})
+              </h2>
+              {wishlistListings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border py-16 text-center">
+                  <Heart size={32} className="text-muted-foreground" strokeWidth={1.5} />
+                  <p className="mt-3 text-sm text-muted-foreground">You haven't saved any sanctuaries to your wishlist yet.</p>
+                  <Link
+                    to="/explore"
+                    className="mt-4 rounded-full bg-foreground px-5 py-2.5 text-xs font-semibold text-background hover:opacity-90"
+                  >
+                    Explore Stays to Save
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {wishlistListings.map((listing) => (
+                    <ListingCard key={listing.id} listing={listing} />
                   ))}
                 </div>
               )}

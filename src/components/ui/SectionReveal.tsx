@@ -12,7 +12,7 @@ export interface SectionRevealProps {
 export default function SectionReveal({
   children,
   delay = 0,
-  y = 24,
+  y = 16,
   className = "",
   once = true,
 }: SectionRevealProps) {
@@ -20,8 +20,8 @@ export default function SectionReveal({
     <motion.div
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once, margin: "-60px" }}
-      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      viewport={{ once, margin: "0px" }}
+      transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
     >
       {children}

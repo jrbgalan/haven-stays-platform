@@ -64,14 +64,14 @@ export default function BookingFlow() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center pt-16">
+      <div className="flex items-center justify-center py-24 pt-24">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-foreground" />
       </div>
     );
   }
   if (!listing) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 pt-16 text-center">
+      <div className="container-haven flex flex-col items-center justify-center gap-4 py-24 text-center">
         <h1 className="font-heading text-2xl font-medium">Stay not found</h1>
         <Link to="/explore" className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background">Back to explore</Link>
       </div>
@@ -171,8 +171,8 @@ export default function BookingFlow() {
   if (confirmed) return <Confirmation booking={confirmed} listing={listing} isDayUse={isDayUse} timeSlot={timeSlot} />;
 
   return (
-    <div className="pt-16">
-      <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8">
+    <div className="pt-20 pb-16">
+      <div className="container-haven max-w-3xl section-padding">
         {/* Progress */}
         <div className="mb-10 flex items-center justify-between">
           {STEPS.map((s, i) => (
@@ -400,8 +400,8 @@ function Confirmation({ booking, listing, isDayUse, timeSlot }: { booking: any; 
     setTimeout(() => setCopied(false), 1800);
   };
   return (
-    <div className="pt-16">
-      <div className="mx-auto max-w-2xl px-5 py-16 text-center sm:py-24">
+    <div className="pt-20 pb-16">
+      <div className="container-haven max-w-2xl section-padding text-center">
         <motion.div initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", damping: 12, stiffness: 200 }} className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-foreground text-background">
           <PartyPopper size={28} />
         </motion.div>

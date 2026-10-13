@@ -170,55 +170,123 @@ export default function MultiProductSearchBar({
     }
   };
 
+  // Track horizontal scrolling of tab bar
+  const tabsScrollRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkTabsScroll = () => {
+    if (!tabsScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = tabsScrollRef.current;
+    setCanScrollLeft(scrollLeft > 6);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 6);
+  };
+
+  React.useEffect(() => {
+    checkTabsScroll();
+    const el = tabsScrollRef.current;
+    if (el) el.addEventListener("scroll", checkTabsScroll, { passive: true });
+    window.addEventListener("resize", checkTabsScroll);
+    return () => {
+      if (el) el.removeEventListener("scroll", checkTabsScroll);
+      window.removeEventListener("resize", checkTabsScroll);
+    };
+  }, []);
+
+  const scrollTabs = (offset: number) => {
+    if (tabsScrollRef.current) {
+      tabsScrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
+    }
+  };
+
   return (
     <div className={cn("w-full transition-all duration-300", className)}>
       {/* 1. HORIZONTALLY SCROLLABLE PRODUCT TABS WITH SLIDING INDICATOR */}
-      <div className="relative mb-3 flex items-center overflow-x-auto no-scrollbar rounded-full border border-border/80 bg-background/85 p-1.5 shadow-luxe backdrop-blur-xl touch-pan-x snap-x scroll-smooth">
-        <div className="flex items-center gap-1 min-w-max px-1">
-          {PRODUCT_TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
-            const TabIcon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "relative flex shrink-0 snap-start items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium transition-colors duration-200 outline-none select-none sm:px-4 sm:text-sm",
-                  isActive
-                    ? "text-background font-semibold"
-                    : "text-foreground/70 hover:text-foreground hover:bg-secondary/60"
-                )}
-              >
-                {/* Active Sliding Pill */}
-                {isActive && (
-                  <motion.div
-                    layoutId="searchActiveTab"
-                    className="absolute inset-0 rounded-full bg-foreground shadow-md"
-                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                  />
-                )}
+      <div className="relative mb-3 group">
+        {/* Left Scroll Arrow */}
+        {canScrollLeft && (
+          <button
+            type="button"
+            onClick={() => scrollTabs(-180)}
+            aria-label="Scroll tabs left"
+            className="absolute left-1.5 top-1/2 -translate-y-1/2 z-20 grid h-7 w-7 place-items-center rounded-full bg-background/95 border border-border shadow-md text-foreground transition-all hover:scale-105 active:scale-95"
+          >
+            <span className="text-xs">‹</span>
+          </button>
+        )}
 
-                <span className="relative z-10 flex items-center gap-2">
-                  <TabIcon size={15} />
-                  <span>{tab.label}</span>
-                  {tab.badge && (
-                    <span
-                      className={cn(
-                        "rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
-                        isActive
-                          ? "bg-champagne text-foreground"
-                          : "bg-champagne/20 text-champagne-dark dark:text-champagne-light"
-                      )}
-                    >
-                      {tab.badge}
-                    </span>
+        {/* Scroll Track */}
+        <div
+          ref={tabsScrollRef}
+          onScroll={checkTabsScroll}
+          className="flex items-center overflow-x-auto no-scrollbar rounded-full border border-border/80 bg-background/85 p-1.5 shadow-luxe backdrop-blur-xl touch-pan-x snap-x scroll-smooth pl-2 pr-12 sm:pr-16"
+        >
+          <div className="flex items-center gap-1 min-w-max px-1">
+            {PRODUCT_TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const TabIcon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "relative flex shrink-0 snap-start items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium transition-colors duration-200 outline-none select-none sm:px-4 sm:text-sm",
+                    isActive
+                      ? "text-background font-semibold"
+                      : "text-foreground/70 hover:text-foreground hover:bg-secondary/60"
                   )}
-                </span>
-              </button>
-            );
-          })}
+                >
+                  {/* Active Sliding Pill */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="searchActiveTab"
+                      className="absolute inset-0 rounded-full bg-foreground shadow-md"
+                      transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                    />
+                  )}
+
+                  <span className="relative z-10 flex items-center gap-2 whitespace-nowrap">
+                    <TabIcon size={15} />
+                    <span>{tab.label}</span>
+                    {tab.badge && (
+                      <span
+                        className={cn(
+                          "rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
+                          isActive
+                            ? "bg-champagne text-foreground"
+                            : "bg-champagne/20 text-champagne-dark dark:text-champagne-light"
+                        )}
+                      >
+                        {tab.badge}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Dynamic Edge Gradient Indicators */}
+        {canScrollLeft && (
+          <div className="pointer-events-none absolute left-1.5 top-1.5 bottom-1.5 w-8 rounded-l-full bg-gradient-to-r from-background via-background/40 to-transparent" />
+        )}
+        {canScrollRight && (
+          <div className="pointer-events-none absolute right-1.5 top-1.5 bottom-1.5 w-10 sm:w-14 rounded-r-full bg-gradient-to-l from-background via-background/50 to-transparent" />
+        )}
+
+        {/* Right Scroll Arrow */}
+        {canScrollRight && (
+          <button
+            type="button"
+            onClick={() => scrollTabs(180)}
+            aria-label="Scroll tabs right"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20 grid h-7 w-7 place-items-center rounded-full bg-background/95 border border-border shadow-md text-foreground transition-all hover:scale-105 active:scale-95"
+          >
+            <span className="text-xs">›</span>
+          </button>
+        )}
       </div>
 
       {/* 2. DYNAMIC SEARCH FORM BOX */}
