@@ -13,6 +13,7 @@ import GalleryLightbox from "@/components/listings/GalleryLightbox";
 import SectionReveal from "@/components/ui/SectionReveal";
 import AroundThisStay from "@/components/places/AroundThisStay";
 import SimilarStays from "@/components/places/SimilarStays";
+import GoogleMap from "@/components/maps/GoogleMap";
 import { formatCurrency, nightsBetween, calcTotal } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useSeo } from "@/lib/seo";
@@ -233,27 +234,26 @@ export default function ListingDetail() {
             </div>
           </SectionReveal>
 
-          {/* Map placeholder */}
+          {/* Real Google Map (No API Key Required) */}
           <SectionReveal delay={0.1}>
             <div className="border-b border-border py-6">
-              <h3 className="mb-4 font-heading text-lg font-medium">Where you'll be</h3>
-              <div className="relative h-64 overflow-hidden rounded-2xl border border-border bg-secondary">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--accent)/0.12),transparent_60%)]" />
-                <svg className="absolute inset-0 h-full w-full opacity-30" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-                      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-foreground" />
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#grid)" />
-                </svg>
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                  <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-foreground text-background shadow-luxe">
-                    <MapPin size={18} />
-                  </div>
-                  <p className="mt-2 text-sm font-medium">{listing.location}, {listing.country}</p>
-                </div>
+              <div className="mb-4">
+                <h3 className="font-heading text-lg font-medium">Where you'll be</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {listing.location || `${listing.city}, ${listing.country}`}
+                </p>
               </div>
+              <GoogleMap
+                location={listing.location}
+                city={listing.city}
+                country={listing.country}
+                title={listing.title}
+                initialZoom={14}
+                heightClassName="h-[360px] sm:h-[420px]"
+                showControls={true}
+                showHighlights={true}
+                showPrivacyNote={true}
+              />
             </div>
           </SectionReveal>
 

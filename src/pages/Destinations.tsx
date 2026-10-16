@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Globe, ArrowRight, Sun, Calendar } from "lucide-react";
+import { Globe, ArrowRight, Sun, Calendar, Map as MapIcon, X } from "lucide-react";
 import SectionReveal from "@/components/ui/SectionReveal";
+import GoogleMap from "@/components/maps/GoogleMap";
 
 interface DestinationItem {
   id: string;
@@ -143,6 +144,7 @@ export default function Destinations() {
     "Explore coveted travel sanctuaries across Southeast Asia, the Mediterranean, Japan, the Swiss Alps, and the Americas."
   );
   const [activeRegion, setActiveRegion] = useState("All");
+  const [mapModalDest, setMapModalDest] = useState<DestinationItem | null>(null);
 
   const filtered = activeRegion === "All"
     ? DESTINATIONS
@@ -236,6 +238,19 @@ export default function Destinations() {
                     <span className="flex items-center gap-1.5">
                       <Sun size={13} /> {dest.temp}
                     </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setMapModalDest(dest);
+                      }}
+                      className="inline-flex items-center gap-1 rounded-full border border-border/80 bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground transition-colors hover:bg-foreground hover:text-background"
+                      title="View on Google Map"
+                    >
+                      <MapIcon size={11} />
+                      <span>Map</span>
+                    </button>
                     <span className="flex items-center gap-1 font-semibold text-foreground group-hover:underline">
                       Explore <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
                     </span>
@@ -246,6 +261,49 @@ export default function Destinations() {
           ))}
         </div>
       </section>
+
+      {/* DESTINATION GOOGLE MAP PREVIEW MODAL */}
+      {mapModalDest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative flex h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4 bg-card/90 backdrop-blur">
+              <div>
+                <h3 className="font-heading text-lg font-semibold">{mapModalDest.name}, {mapModalDest.country}</h3>
+                <p className="text-xs text-muted-foreground">{mapModalDest.tagline}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  to={`/explore?location=${encodeURIComponent(mapModalDest.name)}`}
+                  className="rounded-full bg-foreground px-4 py-1.5 text-xs font-semibold text-background hover:opacity-90 transition-opacity"
+                >
+                  View {mapModalDest.count} Stays
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setMapModalDest(null)}
+                  className="grid h-8 w-8 place-items-center rounded-full border border-border bg-secondary hover:bg-muted text-foreground transition-colors"
+                  aria-label="Close map preview"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 w-full p-4 overflow-hidden">
+              <GoogleMap
+                location={`${mapModalDest.name}, ${mapModalDest.country}`}
+                city={mapModalDest.name}
+                country={mapModalDest.country}
+                title={mapModalDest.name}
+                initialZoom={12}
+                heightClassName="h-full"
+                showControls={true}
+                showHighlights={true}
+                showPrivacyNote={false}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

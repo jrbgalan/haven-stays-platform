@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  SlidersHorizontal, LayoutGrid, List, Search, X, Scale, Sparkles, Check, ArrowRight
+  SlidersHorizontal, LayoutGrid, List, Search, X, Scale, Sparkles, Check, ArrowRight, Map as MapIcon, MapPin
 } from "lucide-react";
 import {
   getListings,
@@ -14,6 +14,7 @@ import {
 import ListingCard from "@/components/listings/ListingCard";
 import SmartSearch from "@/components/ai/SmartSearch";
 import CompareDrawer from "@/components/listings/CompareDrawer";
+import GoogleMap from "@/components/maps/GoogleMap";
 import { PRODUCT_TABS } from "@/components/search/MultiProductSearchBar";
 import AdaptiveProductFilter, { FilterState, DEFAULT_FILTER_STATE } from "@/components/search/AdaptiveProductFilter";
 import {
@@ -73,7 +74,8 @@ export default function Explore() {
   const [bundles, setBundles] = useState<HotelFlightBundle[]>([]);
 
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<"grid" | "list" | "map">("grid");
+  const [selectedMapListing, setSelectedMapListing] = useState<Listing | null>(null);
   const [sort, setSort] = useState("recommended");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(params.get("location") || "");
@@ -518,16 +520,17 @@ export default function Explore() {
               </label>
             )}
 
-            {/* View Grid/List toggle (stays only) */}
+            {/* View Grid/List/Map toggle (stays only) */}
             {["hotels", "homes", "overnight"].includes(productType) && (
               <div className="hidden sm:flex rounded-full border border-border p-1 bg-card">
                 <button
                   onClick={() => setView("grid")}
                   className={cn(
                     "grid h-7 w-7 place-items-center rounded-full transition-colors",
-                    view === "grid" ? "bg-foreground text-background" : "text-foreground/60"
+                    view === "grid" ? "bg-foreground text-background" : "text-foreground/60 hover:text-foreground"
                   )}
                   aria-label="Grid view"
+                  title="Grid view"
                 >
                   <LayoutGrid size={14} />
                 </button>
@@ -535,11 +538,23 @@ export default function Explore() {
                   onClick={() => setView("list")}
                   className={cn(
                     "grid h-7 w-7 place-items-center rounded-full transition-colors",
-                    view === "list" ? "bg-foreground text-background" : "text-foreground/60"
+                    view === "list" ? "bg-foreground text-background" : "text-foreground/60 hover:text-foreground"
                   )}
                   aria-label="List view"
+                  title="List view"
                 >
                   <List size={14} />
+                </button>
+                <button
+                  onClick={() => setView("map")}
+                  className={cn(
+                    "grid h-7 w-7 place-items-center rounded-full transition-colors",
+                    view === "map" ? "bg-foreground text-background" : "text-foreground/60 hover:text-foreground"
+                  )}
+                  aria-label="Map view"
+                  title="Map view"
+                >
+                  <MapIcon size={14} />
                 </button>
               </div>
             )}
@@ -713,24 +728,88 @@ export default function Explore() {
           <div>
             {/* STAYS (Hotels, Homes, Overnight) */}
             {["hotels", "homes", "overnight"].includes(productType) && (
-              <div
-                className={
-                  view === "grid"
-                    ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6"
-                    : "flex flex-col gap-4 lg:gap-6"
-                }
-              >
-                {(results.items as Listing[]).map((listing, i) => (
-                  <ListingCard
-                    key={listing.id}
-                    listing={listing}
-                    index={i}
-                    showTotalPrice={showTotalPrice}
-                    isComparing={comparingListings.some((l) => l.id === listing.id)}
-                    onToggleCompare={handleToggleCompare}
-                  />
-                ))}
-              </div>
+              view === "map" ? (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* Listings list column */}
+                  <div className="lg:col-span-6 xl:col-span-5 flex flex-col gap-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-border text-xs text-muted-foreground">
+                      <span>Hover or select a stay to focus on the map</span>
+                      <span className="font-semibold text-foreground">{results.items.length} stays</span>
+                    </div>
+                    <div className="flex flex-col gap-4 max-h-[calc(100vh-200px)] overflow-y-auto pr-1">
+                      {(results.items as Listing[]).map((listing, i) => {
+                        const isFocused = (selectedMapListing?.id || (results.items as Listing[])[0]?.id) === listing.id;
+                        return (
+                          <div
+                            key={listing.id}
+                            onMouseEnter={() => setSelectedMapListing(listing)}
+                            onClick={() => setSelectedMapListing(listing)}
+                            className={cn(
+                              "cursor-pointer rounded-3xl transition-all duration-200",
+                              isFocused ? "ring-2 ring-foreground shadow-lg" : "opacity-95 hover:opacity-100"
+                            )}
+                          >
+                            <ListingCard
+                              listing={listing}
+                              index={i}
+                              showTotalPrice={showTotalPrice}
+                              isComparing={comparingListings.some((l) => l.id === listing.id)}
+                              onToggleCompare={handleToggleCompare}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Sticky Google Map Column */}
+                  <div className="lg:col-span-6 xl:col-span-7 sticky top-24">
+                    <div className="rounded-3xl border border-border/80 bg-card p-3 shadow-luxe">
+                      <div className="mb-2.5 flex items-center justify-between px-2">
+                        <div className="flex items-center gap-2">
+                          <MapPin size={13} className="text-foreground" />
+                          <span className="text-xs font-semibold text-foreground truncate max-w-[260px]">
+                            {selectedMapListing?.title || (results.items as Listing[])[0]?.title || searchQuery || "Haven Destinations"}
+                          </span>
+                        </div>
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {selectedMapListing?.location || (results.items as Listing[])[0]?.location || "Verified Location"}
+                        </span>
+                      </div>
+                      <GoogleMap
+                        location={selectedMapListing?.location || (results.items as Listing[])[0]?.location || searchQuery || "Mediterranean"}
+                        city={selectedMapListing?.city || (results.items as Listing[])[0]?.city}
+                        country={selectedMapListing?.country || (results.items as Listing[])[0]?.country}
+                        title={selectedMapListing?.title || (results.items as Listing[])[0]?.title}
+                        initialZoom={14}
+                        heightClassName="h-[460px] lg:h-[calc(100vh-230px)] min-h-[420px]"
+                        showControls={true}
+                        showHighlights={true}
+                        showPrivacyNote={true}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={
+                    view === "grid"
+                      ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6"
+                      : "flex flex-col gap-4 lg:gap-6"
+                  }
+                >
+                  {(results.items as Listing[]).map((listing, i) => (
+                    <ListingCard
+                      key={listing.id}
+                      listing={listing}
+                      index={i}
+                      showTotalPrice={showTotalPrice}
+                      isComparing={comparingListings.some((l) => l.id === listing.id)}
+                      onToggleCompare={handleToggleCompare}
+                    />
+                  ))}
+                </div>
+              )
             )}
 
             {/* DAY USE STAYS */}
@@ -881,6 +960,34 @@ export default function Explore() {
         }}
         showTotalPrice={showTotalPrice}
       />
+
+      {/* FLOATING SHOW MAP / SHOW LIST PILL */}
+      {["hotels", "homes", "overnight"].includes(productType) && (
+        <div
+          className={cn(
+            "fixed left-1/2 -translate-x-1/2 z-30 transition-all duration-300",
+            comparingListings.length > 0 ? "bottom-20" : "bottom-6"
+          )}
+        >
+          <button
+            type="button"
+            onClick={() => setView((prev) => (prev === "map" ? "grid" : "map"))}
+            className="flex items-center gap-2 rounded-full border border-border/80 bg-foreground/95 px-5 py-2.5 text-xs font-semibold text-background shadow-2xl backdrop-blur-md transition-all hover:scale-105 active:scale-95"
+          >
+            {view === "map" ? (
+              <>
+                <List size={14} />
+                <span>Show List</span>
+              </>
+            ) : (
+              <>
+                <MapIcon size={14} />
+                <span>Show Map</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
