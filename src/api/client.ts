@@ -3,6 +3,8 @@ import { runAITripConcierge, runAISmartSearch, runAIListingHelper, runHostChatRe
 import {
   enrichListings,
   MOCK_ACTIVITIES,
+  EXPERIENCES_DATA,
+  getMockExperience,
   MOCK_TRANSFERS,
   MOCK_FLIGHTS,
   MOCK_BUNDLES,
@@ -453,10 +455,10 @@ export const client = {
     },
 
     Activity: {
-      list: async (): Promise<Activity[]> => MOCK_ACTIVITIES,
-      get: async (id: string): Promise<Activity | undefined> => MOCK_ACTIVITIES.find((a) => a.id === id),
+      list: async (): Promise<Activity[]> => EXPERIENCES_DATA,
+      get: async (id: string): Promise<Activity | undefined> => getMockExperience(id),
       filter: async (query: any = {}): Promise<Activity[]> => {
-        return MOCK_ACTIVITIES.filter((a: any) => {
+        return EXPERIENCES_DATA.filter((a: any) => {
           for (const [k, v] of Object.entries(query)) {
             if (a[k] !== v) return false;
           }

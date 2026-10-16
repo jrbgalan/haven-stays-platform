@@ -116,7 +116,7 @@ export default function Navbar({ onStartTour }: NavbarProps) {
     topic: "sunset cruise",
     title: "Sunset Catamaran Charter",
     subtitle: "El Nido, Palawan · Private onboard chef",
-    to: "/experiences",
+    to: "/experiences/exp-1",
   });
 
   const [megaDestItem, setMegaDestItem] = useState({
@@ -481,10 +481,10 @@ export default function Navbar({ onStartTour }: NavbarProps) {
                         </p>
                         <div className="grid grid-cols-2 gap-3">
                           {[
-                            { label: "Private Yachting", sub: "Secret lagoon charters & cruises", topic: "sunset cruise", icon: Waves, to: "/experiences" },
-                            { label: "Master Omakase", sub: "Private dining & tea rituals", topic: "private chef dining", icon: Utensils, to: "/experiences" },
-                            { label: "Alpine Expeditions", sub: "Glacier landings & ridge hikes", topic: "hiking adventure", icon: Mountain, to: "/experiences" },
-                            { label: "Holistic Healing", sub: "Balinese sound baths & ayurveda", topic: "spa and wellness", icon: Sparkles, to: "/experiences" },
+                            { label: "Private Yachting", sub: "Secret lagoon charters & cruises", topic: "sunset cruise", icon: Waves, to: "/experiences/exp-1" },
+                            { label: "Master Omakase", sub: "Private dining & tea rituals", topic: "private chef dining", icon: Utensils, to: "/experiences/exp-2" },
+                            { label: "Alpine Expeditions", sub: "Glacier landings & ridge hikes", topic: "hiking adventure", icon: Mountain, to: "/experiences/exp-3" },
+                            { label: "Holistic Healing", sub: "Balinese sound baths & ayurveda", topic: "spa and wellness", icon: Sparkles, to: "/experiences/exp-4" },
                           ].map((cat, idx) => (
                             <Link
                               key={idx}
@@ -511,27 +511,27 @@ export default function Navbar({ onStartTour }: NavbarProps) {
                             Popular this week
                           </p>
                           <div className="flex items-center gap-2 text-xs">
-                            <button
-                              type="button"
-                              onMouseEnter={() => handleLinkHover(setMegaExpItem, { topic: "snorkeling and diving", title: "Coral Snorkeling Safari", subtitle: "Protected reef dives with marine naturalists", to: "/experiences" })}
+                            <Link
+                              to="/experiences/exp-7"
+                              onMouseEnter={() => handleLinkHover(setMegaExpItem, { topic: "snorkeling and diving", title: "Coral Snorkeling Safari", subtitle: "Protected reef dives with marine naturalists", to: "/experiences/exp-7" })}
                               className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
                             >
                               Coral Snorkeling
-                            </button>
-                            <button
-                              type="button"
-                              onMouseEnter={() => handleLinkHover(setMegaExpItem, { topic: "wine tasting", title: "Caldera Wine Tasting", subtitle: "Volcanic Assyrtiko varietals in private cliffside cellars", to: "/experiences" })}
+                            </Link>
+                            <Link
+                              to="/experiences/exp-5"
+                              onMouseEnter={() => handleLinkHover(setMegaExpItem, { topic: "wine tasting", title: "Caldera Wine Tasting", subtitle: "Volcanic Assyrtiko varietals in private cliffside cellars", to: "/experiences/exp-5" })}
                               className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
                             >
                               Volcanic Wine Tasting
-                            </button>
-                            <button
-                              type="button"
-                              onMouseEnter={() => handleLinkHover(setMegaExpItem, { topic: "hot air balloon", title: "Sunrise Balloon Flight", subtitle: "Silent dawn floats over misty valleys", to: "/experiences" })}
+                            </Link>
+                            <Link
+                              to="/experiences/exp-8"
+                              onMouseEnter={() => handleLinkHover(setMegaExpItem, { topic: "hot air balloon", title: "Sunrise Balloon Flight", subtitle: "Silent dawn floats over misty valleys", to: "/experiences/exp-8" })}
                               className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
                             >
                               Sunrise Balloon
-                            </button>
+                            </Link>
                           </div>
                         </div>
                       </div>

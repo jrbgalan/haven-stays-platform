@@ -10,22 +10,66 @@ export type ProductType =
   | "flights"
   | "packages";
 
-export interface Activity {
+export interface ExperienceItineraryItem {
+  time: string;
+  title: string;
+  description: string;
+}
+
+export interface ExperienceReview {
+  id: string;
+  author: string;
+  avatar?: string;
+  country?: string;
+  rating: number;
+  date: string;
+  comment: string;
+  photos?: string[];
+}
+
+export interface Experience {
   id: string;
   title: string;
-  category: "Tours" | "Food" | "Adventure" | "Wellness" | "Culture";
+  category: string;
   location: string;
   city: string;
   country: string;
   duration: string;
+  groupSize: string;
+  languages: string[];
+  meetingPoint: string;
+  meetingPointInstructions?: string;
+  meetingCoordinates?: { lat: number; lng: number };
+  difficulty?: "Easy" | "Moderate" | "Challenging" | string;
+  minAge: number;
+  instantConfirmation?: boolean;
+  price: number;
   pricePerPerson: number;
   rating: number;
   reviewCount: number;
-  image: string;
+  reviewsCount?: number;
+  cancellationPolicy: string;
+  availableSlots: string[];
+  hostName: string;
+  hostBio: string;
+  hostAvatar: string;
+  hostResponseTime?: string;
   description: string;
+  tagline?: string;
   highlights: string[];
   included: string[];
+  notIncluded: string[];
+  whatToBring?: string[];
+  itinerary: ExperienceItineraryItem[];
+  faqs?: { question: string; answer: string }[];
+  reviews?: ExperienceReview[];
+  topic: string;
+  badge?: string;
+  image: string;
+  images?: string[];
 }
+
+export type Activity = Experience;
 
 export interface Transfer {
   id: string;

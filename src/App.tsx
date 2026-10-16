@@ -27,6 +27,7 @@ const About = lazy(() => import('@/pages/About'));
 const Concierge = lazy(() => import('@/pages/Concierge'));
 const Press = lazy(() => import('@/pages/Press'));
 const Experiences = lazy(() => import('@/pages/Experiences'));
+const ExperienceDetail = lazy(() => import('@/pages/ExperienceDetail'));
 const Destinations = lazy(() => import('@/pages/Destinations'));
 const Deals = lazy(() => import('@/pages/Deals'));
 const Journal = lazy(() => import('@/pages/Journal'));
@@ -65,6 +66,7 @@ const AuthenticatedApp: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/experiences" element={<Experiences />} />
+          <Route path="/experiences/:id" element={<ExperienceDetail />} />
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/deals" element={<Deals />} />
           <Route path="/journal" element={<Journal />} />

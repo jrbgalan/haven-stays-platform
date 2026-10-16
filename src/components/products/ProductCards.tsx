@@ -1,11 +1,13 @@
 import React from "react";
 import {
-  Clock, Users, Star, Luggage, Plane,
+  Users, Star, Luggage, Plane,
   ArrowRight, Check, MapPin, Sun
 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import type { Activity, Transfer, Flight, HotelFlightBundle } from "@/types/products";
 import type { Listing } from "@/types/listing";
+
+import ExperienceCard from "@/components/experiences/ExperienceCard";
 
 // 1. ACTIVITY CARD
 export function ActivityCard({
@@ -15,72 +17,7 @@ export function ActivityCard({
   activity: Activity;
   onBook: (act: Activity) => void;
 }) {
-  return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border/75 bg-card shadow-luxe transition-all duration-300 hover:-translate-y-1 hover:shadow-luxe-lg">
-      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-        <img
-          src={activity.image}
-          alt={activity.title}
-          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 scrim-card" />
-        <span className="absolute left-4 top-4 rounded-full bg-foreground/80 px-3 py-1 text-xs font-semibold text-background backdrop-blur">
-          {activity.category}
-        </span>
-        <span className="absolute bottom-4 left-4 text-xs font-semibold uppercase tracking-wider text-white">
-          {activity.city}, {activity.country}
-        </span>
-      </div>
-
-      <div className="flex flex-1 flex-col p-6">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5 font-medium">
-            <Clock size={13} /> {activity.duration}
-          </span>
-          <span className="flex items-center gap-1 font-semibold text-foreground">
-            <Star size={12} className="fill-accent text-accent" /> {activity.rating} ({activity.reviewCount})
-          </span>
-        </div>
-
-        <h3 className="mt-2.5 font-heading text-lg font-medium tracking-tight text-foreground line-clamp-2">
-          {activity.title}
-        </h3>
-
-        <p className="mt-2 flex-1 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-          {activity.description}
-        </p>
-
-        {activity.highlights && activity.highlights.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-1.5 border-t border-border/60 pt-3">
-            {activity.highlights.slice(0, 2).map((h, i) => (
-              <span key={i} className="rounded-full bg-secondary px-2.5 py-0.5 text-[11px] text-muted-foreground">
-                • {h}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-4">
-          <div>
-            <span className="text-[11px] text-muted-foreground">From</span>
-            <p className="text-lg font-semibold text-foreground">
-              {formatCurrency(activity.pricePerPerson)}
-              <span className="text-xs font-normal text-muted-foreground"> / guest</span>
-            </p>
-          </div>
-
-          <button
-            onClick={() => onBook(activity)}
-            className="flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-xs font-semibold text-background transition-transform hover:scale-102 active:scale-95 shadow-sm"
-          >
-            <span>Book Activity</span>
-            <ArrowRight size={13} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  return <ExperienceCard experience={activity} onBook={onBook} />;
 }
 
 // 2. TRANSFER CARD

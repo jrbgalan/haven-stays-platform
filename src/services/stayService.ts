@@ -27,6 +27,7 @@ import type {
   ProductBooking,
   CreateProductBookingDTO,
   Activity,
+  Experience,
   Transfer,
   Flight,
   HotelFlightBundle,
@@ -130,6 +131,34 @@ export async function getActivityById(id: string): Promise<Activity | undefined>
     return await withRetry(() => getStayProvider().getActivityById(id));
   } catch (err) {
     handleServiceError(err, `getActivityById(${id})`);
+  }
+}
+
+export async function getExperiences(filter?: Record<string, unknown>): Promise<Experience[]> {
+  try {
+    const cacheKey = filter ? `experiences_${JSON.stringify(filter)}` : CACHE_KEY_ACTIVITIES;
+    const cached = memoryCache.get<Experience[]>(cacheKey);
+    if (cached) return cached;
+
+    const data = await withRetry(() => getStayProvider().getExperiences(filter));
+    memoryCache.set(cacheKey, data, 60000);
+    return data;
+  } catch (err) {
+    handleServiceError(err, "getExperiences");
+  }
+}
+
+export async function getExperienceById(id: string): Promise<Experience | undefined> {
+  try {
+    const cacheKey = `experience_${id}`;
+    const cached = memoryCache.get<Experience>(cacheKey);
+    if (cached) return cached;
+
+    const data = await withRetry(() => getStayProvider().getExperienceById(id));
+    if (data) memoryCache.set(cacheKey, data, 60000);
+    return data;
+  } catch (err) {
+    handleServiceError(err, `getExperienceById(${id})`);
   }
 }
 

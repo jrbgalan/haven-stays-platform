@@ -232,3 +232,4 @@ export function getPhotoCredit(photo: UnsplashPhoto | null | undefined) {
     photoUrl: photo.photo_page_url,
   };
 }
+

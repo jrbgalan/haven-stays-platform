@@ -1,5 +1,15 @@
 import type { Listing } from "./listing";
-import type { Activity, Transfer, Flight, HotelFlightBundle, ProductType, ProductBooking } from "./products";
+import type {
+  Activity,
+  Experience,
+  ExperienceItineraryItem,
+  ExperienceReview,
+  Transfer,
+  Flight,
+  HotelFlightBundle,
+  ProductType,
+  ProductBooking,
+} from "./products";
 
 export interface Place {
   id: string;
@@ -293,4 +303,15 @@ export interface ListingFilterOptions {
   sort?: string;
 }
 
-export type { Listing, Activity, Transfer, Flight, HotelFlightBundle, ProductType, ProductBooking };
+export type {
+  Listing,
+  Activity,
+  Experience,
+  ExperienceItineraryItem,
+  ExperienceReview,
+  Transfer,
+  Flight,
+  HotelFlightBundle,
+  ProductType,
+  ProductBooking,
+};

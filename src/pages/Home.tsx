@@ -15,6 +15,8 @@ import { ListingCardSkeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/button";
 import { COLLECTIONS, HERO_IMAGE, GEN_IMAGES } from "@/lib/constants";
 import { useSeo } from "@/lib/seo";
+import ExperienceCard from "@/components/experiences/ExperienceCard";
+import { EXPERIENCES_DATA } from "@/lib/mockProductData";
 import type { Listing } from "@/types/listing";
 
 const HERO_IMG = HERO_IMAGE;
@@ -227,7 +229,35 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 6. STATS & REPUTATION */}
+      {/* 6. BESPOKE EXPERIENCES SHOWCASE */}
+      <section className="container-haven section-padding">
+        <SectionReveal>
+          <div className="flex items-end justify-between gap-4 section-header">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Beyond Ordinary</span>
+              <h2 className="mt-2.5 font-heading text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                Bespoke Experiences
+              </h2>
+            </div>
+            <Link
+              to="/experiences"
+              className="group hidden items-center gap-1.5 text-sm font-medium text-foreground/75 hover:text-foreground sm:flex"
+            >
+              Browse all experiences <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        </SectionReveal>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {EXPERIENCES_DATA.slice(0, 3).map((exp, i) => (
+            <SectionReveal key={exp.id} delay={i * 0.1}>
+              <ExperienceCard experience={exp} />
+            </SectionReveal>
+          ))}
+        </div>
+      </section>
+
+      {/* 7. STATS & REPUTATION */}
       <section className="container-haven section-padding">
         <div className="grid gap-8 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
           {[

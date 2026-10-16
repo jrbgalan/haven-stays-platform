@@ -138,7 +138,12 @@ export default function Dashboard() {
       totalPrice: pb.totalPrice,
       status: pb.status,
       reference: pb.referenceCode,
-      link: pb.productType === "hotels" || pb.productType === "homes" || pb.productType === "overnight" ? `/listing/${pb.itemId}` : "/explore",
+      link:
+        pb.productType === "hotels" || pb.productType === "homes" || pb.productType === "overnight"
+          ? `/listing/${pb.itemId}`
+          : pb.productType === "activities" || (pb.productType as string) === "activity"
+          ? `/experiences/${pb.itemId}`
+          : "/explore",
       createdAt: pb.createdAt,
     })),
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

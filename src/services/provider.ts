@@ -25,6 +25,7 @@ import type {
   ProductBooking,
   CreateProductBookingDTO,
   Activity,
+  Experience,
   Transfer,
   Flight,
   HotelFlightBundle,
@@ -48,6 +49,8 @@ export interface StayProvider {
   // Multi-Product Catalog
   getActivities(filter?: Record<string, unknown>): Promise<Activity[]>;
   getActivityById(id: string): Promise<Activity | undefined>;
+  getExperiences(filter?: Record<string, unknown>): Promise<Experience[]>;
+  getExperienceById(id: string): Promise<Experience | undefined>;
   getTransfers(filter?: Record<string, unknown>): Promise<Transfer[]>;
   getTransferById(id: string): Promise<Transfer | undefined>;
   getFlights(filter?: Record<string, unknown>): Promise<Flight[]>;
@@ -179,6 +182,14 @@ export class Base44StayProvider implements StayProvider {
 
   async getActivityById(id: string): Promise<Activity | undefined> {
     return client.entities.Activity.get(id);
+  }
+
+  async getExperiences(filter?: Record<string, unknown>): Promise<Experience[]> {
+    return this.getActivities(filter);
+  }
+
+  async getExperienceById(id: string): Promise<Experience | undefined> {
+    return this.getActivityById(id);
   }
 
   async getTransfers(filter?: Record<string, unknown>): Promise<Transfer[]> {
