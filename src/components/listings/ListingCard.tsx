@@ -9,6 +9,7 @@ import SaveButton from "@/components/listings/SaveButton";
 import ShareButton from "@/components/listings/ShareButton";
 import VerifiedBadge from "@/components/listings/VerifiedBadge";
 import { formatCurrency } from "@/lib/format";
+import { getPhotos, imageUrl } from "@/lib/photos";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/types/listing";
 
@@ -28,7 +29,17 @@ export default function ListingCard({
   onToggleCompare,
 }: ListingCardProps) {
   const [active, setActive] = useState(0);
-  const images = listing.images || [];
+
+  // Ensure every listing card carousel has 5+ curated photos
+  const images = React.useMemo(() => {
+    const rawImages = listing.images || [];
+    if (rawImages.length >= 5) return rawImages;
+    const topicPhotos = getPhotos(listing.category || listing.location || "beachfront villa", 6);
+    const extra = topicPhotos.map((p) => imageUrl(p, 800, 75));
+    const merged = Array.from(new Set([...rawImages, ...extra]));
+    return merged.length >= 5 ? merged.slice(0, 6) : merged;
+  }, [listing]);
+
   const count = images.length;
 
   const prev = (e: React.MouseEvent) => {

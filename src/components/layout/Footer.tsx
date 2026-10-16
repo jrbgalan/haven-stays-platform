@@ -142,6 +142,7 @@ export default function Footer() {
                 <li><Link to="/journal" className="text-foreground/70 hover:text-foreground">Journal</Link></li>
                 <li><Link to="/press" className="text-foreground/70 hover:text-foreground">Press</Link></li>
                 <li><Link to="/host" className="text-foreground/70 hover:text-foreground">Host with us</Link></li>
+                <li><Link to="/photo-credits" className="text-foreground/70 hover:text-foreground">Photo credits</Link></li>
               </ul>
             </div>
             <div>

@@ -12,6 +12,7 @@ import { getConversations } from "@/services";
 import { resetDemoData } from "@/lib/seedDemoData";
 import { useToast } from "@/components/ui/use-toast";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import MegaMenuFeaturedImage from "@/components/layout/MegaMenuFeaturedImage";
 import { cn } from "@/lib/utils";
 
 export interface NavbarProps {
@@ -102,6 +103,40 @@ export default function Navbar({ onStartTour }: NavbarProps) {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const megaRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic Mega-Menu Hover State for Photo Crossfade
+  const [megaStaysItem, setMegaStaysItem] = useState({
+    topic: "beachfront villa",
+    title: "Beachfront Estates",
+    subtitle: "Private ocean coves & panoramic infinity pools",
+    to: "/explore?category=Beachfront",
+  });
+
+  const [megaExpItem, setMegaExpItem] = useState({
+    topic: "sunset cruise",
+    title: "Sunset Catamaran Charter",
+    subtitle: "El Nido, Palawan · Private onboard chef",
+    to: "/experiences",
+  });
+
+  const [megaDestItem, setMegaDestItem] = useState({
+    topic: "Palawan",
+    title: "Palawan Archipelago",
+    subtitle: "Limestone towers, hidden lagoons & untouched atolls",
+    to: "/destinations",
+  });
+
+  const hoverDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleLinkHover = (setter: React.Dispatch<React.SetStateAction<any>>, item: any) => {
+    if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
+      return;
+    }
+    if (hoverDebounceRef.current) clearTimeout(hoverDebounceRef.current);
+    hoverDebounceRef.current = setTimeout(() => {
+      setter(item);
+    }, 80);
+  };
 
   // Touch handling for mobile drawer swipe to close
   const touchStartXRef = useRef<number | null>(null);
@@ -366,15 +401,17 @@ export default function Navbar({ onStartTour }: NavbarProps) {
                         </p>
                         <div className="grid grid-cols-2 gap-3">
                           {[
-                            { label: "Beachfront Estates", sub: "Private ocean coves", icon: Waves, to: "/explore?category=Beachfront" },
-                            { label: "Mountain Cabins", sub: "Pine hearth retreats", icon: Mountain, to: "/explore?category=Cabins" },
-                            { label: "Island Sanctuaries", sub: "Secluded atolls", icon: Palmtree, to: "/explore?category=Islands" },
-                            { label: "Historic Châteaux", sub: "Architectural soul", icon: Landmark, to: "/explore?category=Historic" },
+                            { label: "Beachfront Estates", sub: "Private ocean coves & reefs", topic: "beachfront villa", icon: Waves, to: "/explore?category=Beachfront" },
+                            { label: "Mountain Cabins", sub: "Pine hearth & alpine quiet", topic: "mountain cabin", icon: Mountain, to: "/explore?category=Cabins" },
+                            { label: "Island Sanctuaries", sub: "Secluded atolls & lagoons", topic: "infinity pool", icon: Palmtree, to: "/explore?category=Beachfront" },
+                            { label: "Historic Châteaux", sub: "Architectural estates & heritage", topic: "countryside estate", icon: Landmark, to: "/explore?category=Villas" },
                           ].map((cat, idx) => (
                             <Link
                               key={idx}
                               to={cat.to}
-                              className="group flex items-start gap-3 rounded-2xl p-2.5 transition-colors hover:bg-secondary"
+                              onMouseEnter={() => handleLinkHover(setMegaStaysItem, { topic: cat.topic, title: cat.label, subtitle: cat.sub, to: cat.to })}
+                              onFocus={() => setMegaStaysItem({ topic: cat.topic, title: cat.label, subtitle: cat.sub, to: cat.to })}
+                              className="group flex items-start gap-3 rounded-2xl p-2.5 transition-colors hover:bg-secondary focus:bg-secondary focus:outline-none"
                             >
                               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-secondary text-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
                                 <cat.icon size={16} />
@@ -394,42 +431,43 @@ export default function Navbar({ onStartTour }: NavbarProps) {
                             Popular this week
                           </p>
                           <div className="flex items-center gap-2 text-xs">
-                            <Link to="/explore?location=Palawan" className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80">
+                            <Link
+                              to="/explore?location=Palawan"
+                              onMouseEnter={() => handleLinkHover(setMegaStaysItem, { topic: "Palawan", title: "Palawan Archipelago", subtitle: "Limestone towers, hidden lagoons & private islands", to: "/explore?location=Palawan" })}
+                              onFocus={() => setMegaStaysItem({ topic: "Palawan", title: "Palawan Archipelago", subtitle: "Limestone towers, hidden lagoons & private islands", to: "/explore?location=Palawan" })}
+                              className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
+                            >
                               Palawan, Philippines
                             </Link>
-                            <Link to="/explore?location=Kyoto" className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80">
+                            <Link
+                              to="/explore?location=Kyoto"
+                              onMouseEnter={() => handleLinkHover(setMegaStaysItem, { topic: "Kyoto", title: "Kyoto Zen Pavilions", subtitle: "Preserved cedar machiyas & maple courtyards", to: "/explore?location=Kyoto" })}
+                              onFocus={() => setMegaStaysItem({ topic: "Kyoto", title: "Kyoto Zen Pavilions", subtitle: "Preserved cedar machiyas & maple courtyards", to: "/explore?location=Kyoto" })}
+                              className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
+                            >
                               Kyoto, Japan
                             </Link>
-                            <Link to="/explore?location=Santorini" className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80">
+                            <Link
+                              to="/explore?location=Santorini"
+                              onMouseEnter={() => handleLinkHover(setMegaStaysItem, { topic: "Santorini", title: "Santorini Cliff Suites", subtitle: "Whitewashed Cycladic vaults & cobalt Aegean vistas", to: "/explore?location=Santorini" })}
+                              onFocus={() => setMegaStaysItem({ topic: "Santorini", title: "Santorini Cliff Suites", subtitle: "Whitewashed Cycladic vaults & cobalt Aegean vistas", to: "/explore?location=Santorini" })}
+                              className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
+                            >
                               Santorini, Greece
                             </Link>
                           </div>
                         </div>
                       </div>
 
-                      {/* FEATURED CARD */}
+                      {/* FEATURED CROSSFADE CARD */}
                       <div className="col-span-5">
-                        <Link
-                          to="/explore"
-                          className="group relative flex h-full flex-col justify-end overflow-hidden rounded-2xl bg-muted p-4 shadow-sm"
-                        >
-                          <img
-                            src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80"
-                            alt="Villa Calamian"
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 scrim-card" />
-                          <div className="relative z-10 text-white">
-                            <span className="rounded-full bg-foreground/85 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide backdrop-blur">
-                              Featured Sanctuary
-                            </span>
-                            <h4 className="mt-2 font-heading text-lg font-medium">Villa Calamian</h4>
-                            <p className="text-xs text-white/80">Coron, Palawan · Private Beachfront</p>
-                            <p className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-champagne-light">
-                              View stay <ArrowRight size={12} />
-                            </p>
-                          </div>
-                        </Link>
+                        <MegaMenuFeaturedImage
+                          topic={megaStaysItem.topic}
+                          title={megaStaysItem.title}
+                          subtitle={megaStaysItem.subtitle}
+                          badge="Featured Sanctuary"
+                          linkTo={megaStaysItem.to}
+                        />
                       </div>
                     </div>
                   )}
@@ -443,15 +481,17 @@ export default function Navbar({ onStartTour }: NavbarProps) {
                         </p>
                         <div className="grid grid-cols-2 gap-3">
                           {[
-                            { label: "Private Yachting", sub: "Secret lagoon charters", icon: Waves, to: "/experiences" },
-                            { label: "Master Omakase", sub: "Private garden tastings", icon: Utensils, to: "/experiences" },
-                            { label: "Glacier Landings", sub: "Alpine helicopter tours", icon: Mountain, to: "/experiences" },
-                            { label: "Holistic Healing", sub: "Balinese sound baths", icon: Sparkles, to: "/experiences" },
+                            { label: "Private Yachting", sub: "Secret lagoon charters & cruises", topic: "sunset cruise", icon: Waves, to: "/experiences" },
+                            { label: "Master Omakase", sub: "Private dining & tea rituals", topic: "private chef dining", icon: Utensils, to: "/experiences" },
+                            { label: "Alpine Expeditions", sub: "Glacier landings & ridge hikes", topic: "hiking adventure", icon: Mountain, to: "/experiences" },
+                            { label: "Holistic Healing", sub: "Balinese sound baths & ayurveda", topic: "spa and wellness", icon: Sparkles, to: "/experiences" },
                           ].map((cat, idx) => (
                             <Link
                               key={idx}
                               to={cat.to}
-                              className="group flex items-start gap-3 rounded-2xl p-2.5 transition-colors hover:bg-secondary"
+                              onMouseEnter={() => handleLinkHover(setMegaExpItem, { topic: cat.topic, title: cat.label, subtitle: cat.sub, to: cat.to })}
+                              onFocus={() => setMegaExpItem({ topic: cat.topic, title: cat.label, subtitle: cat.sub, to: cat.to })}
+                              className="group flex items-start gap-3 rounded-2xl p-2.5 transition-colors hover:bg-secondary focus:bg-secondary focus:outline-none"
                             >
                               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-secondary text-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
                                 <cat.icon size={16} />
@@ -471,37 +511,40 @@ export default function Navbar({ onStartTour }: NavbarProps) {
                             Popular this week
                           </p>
                           <div className="flex items-center gap-2 text-xs">
-                            <span className="text-muted-foreground">Kyoto Tea Ceremony</span>
-                            <span>•</span>
-                            <span className="text-muted-foreground">Santorini Aegean Sail</span>
-                            <span>•</span>
-                            <span className="text-muted-foreground">Matterhorn Heli-Picnic</span>
+                            <button
+                              type="button"
+                              onMouseEnter={() => handleLinkHover(setMegaExpItem, { topic: "snorkeling and diving", title: "Coral Snorkeling Safari", subtitle: "Protected reef dives with marine naturalists", to: "/experiences" })}
+                              className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
+                            >
+                              Coral Snorkeling
+                            </button>
+                            <button
+                              type="button"
+                              onMouseEnter={() => handleLinkHover(setMegaExpItem, { topic: "wine tasting", title: "Caldera Wine Tasting", subtitle: "Volcanic Assyrtiko varietals in private cliffside cellars", to: "/experiences" })}
+                              className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
+                            >
+                              Volcanic Wine Tasting
+                            </button>
+                            <button
+                              type="button"
+                              onMouseEnter={() => handleLinkHover(setMegaExpItem, { topic: "hot air balloon", title: "Sunrise Balloon Flight", subtitle: "Silent dawn floats over misty valleys", to: "/experiences" })}
+                              className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
+                            >
+                              Sunrise Balloon
+                            </button>
                           </div>
                         </div>
                       </div>
 
+                      {/* FEATURED CROSSFADE CARD */}
                       <div className="col-span-5">
-                        <Link
-                          to="/experiences"
-                          className="group relative flex h-full flex-col justify-end overflow-hidden rounded-2xl bg-muted p-4 shadow-sm"
-                        >
-                          <img
-                            src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80"
-                            alt="Sunset Catamaran"
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 scrim-card" />
-                          <div className="relative z-10 text-white">
-                            <span className="rounded-full bg-foreground/85 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide backdrop-blur">
-                              Most Requested
-                            </span>
-                            <h4 className="mt-2 font-heading text-lg font-medium">Sunset Catamaran Charter</h4>
-                            <p className="text-xs text-white/80">El Nido, Palawan · Private Chef</p>
-                            <p className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-champagne-light">
-                              Discover <ArrowRight size={12} />
-                            </p>
-                          </div>
-                        </Link>
+                        <MegaMenuFeaturedImage
+                          topic={megaExpItem.topic}
+                          title={megaExpItem.title}
+                          subtitle={megaExpItem.subtitle}
+                          badge="Most Requested"
+                          linkTo={megaExpItem.to}
+                        />
                       </div>
                     </div>
                   )}
@@ -515,15 +558,17 @@ export default function Navbar({ onStartTour }: NavbarProps) {
                         </p>
                         <div className="grid grid-cols-2 gap-3">
                           {[
-                            { label: "Southeast Asia", sub: "Palawan, Cebu, Siargao", icon: Palmtree, to: "/destinations" },
-                            { label: "East Asia", sub: "Tokyo, Kyoto, Hakone", icon: Landmark, to: "/destinations" },
-                            { label: "The Mediterranean", sub: "Santorini, Amalfi", icon: Waves, to: "/destinations" },
-                            { label: "Swiss Alps & Beyond", sub: "Zermatt, Matterhorn", icon: Mountain, to: "/destinations" },
+                            { label: "Southeast Asia", sub: "Palawan, Cebu, Siargao", topic: "Palawan", icon: Palmtree, to: "/destinations" },
+                            { label: "East Asia", sub: "Tokyo, Kyoto, Hakone", topic: "Tokyo", icon: Landmark, to: "/destinations" },
+                            { label: "The Mediterranean", sub: "Santorini, Amalfi Coast", topic: "Santorini", icon: Waves, to: "/destinations" },
+                            { label: "Swiss Alps & Beyond", sub: "Zermatt, Swiss Alps", topic: "Zermatt", icon: Mountain, to: "/destinations" },
                           ].map((cat, idx) => (
                             <Link
                               key={idx}
                               to={cat.to}
-                              className="group flex items-start gap-3 rounded-2xl p-2.5 transition-colors hover:bg-secondary"
+                              onMouseEnter={() => handleLinkHover(setMegaDestItem, { topic: cat.topic, title: cat.label, subtitle: cat.sub, to: cat.to })}
+                              onFocus={() => setMegaDestItem({ topic: cat.topic, title: cat.label, subtitle: cat.sub, to: cat.to })}
+                              className="group flex items-start gap-3 rounded-2xl p-2.5 transition-colors hover:bg-secondary focus:bg-secondary focus:outline-none"
                             >
                               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-secondary text-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
                                 <cat.icon size={16} />
@@ -543,35 +588,40 @@ export default function Navbar({ onStartTour }: NavbarProps) {
                             Seasonal Spotlight
                           </p>
                           <div className="flex items-center gap-2 text-xs">
-                            <span className="text-muted-foreground">Best now: Kyoto (Autumn)</span>
-                            <span>•</span>
-                            <span className="text-muted-foreground">Palawan (Calm Seas)</span>
+                            <button
+                              type="button"
+                              onMouseEnter={() => handleLinkHover(setMegaDestItem, { topic: "Kyoto", title: "Kyoto Heritage", subtitle: "Ancient Zen gardens & preserved cedar pavilions", to: "/destinations" })}
+                              className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
+                            >
+                              Best now: Kyoto
+                            </button>
+                            <button
+                              type="button"
+                              onMouseEnter={() => handleLinkHover(setMegaDestItem, { topic: "Palawan", title: "Palawan Lagoons", subtitle: "Crystal turquoise waters & private frontier coves", to: "/destinations" })}
+                              className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
+                            >
+                              Palawan (Calm Seas)
+                            </button>
+                            <button
+                              type="button"
+                              onMouseEnter={() => handleLinkHover(setMegaDestItem, { topic: "Bali", title: "Bali Sanctuaries", subtitle: "Cliffside infinity pools & lush holistic valleys", to: "/destinations" })}
+                              className="rounded-full bg-secondary px-3 py-1 text-foreground/80 hover:bg-secondary/80 focus:bg-secondary/80 focus:outline-none"
+                            >
+                              Bali
+                            </button>
                           </div>
                         </div>
                       </div>
 
+                      {/* FEATURED CROSSFADE CARD */}
                       <div className="col-span-5">
-                        <Link
-                          to="/destinations"
-                          className="group relative flex h-full flex-col justify-end overflow-hidden rounded-2xl bg-muted p-4 shadow-sm"
-                        >
-                          <img
-                            src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=600&q=80"
-                            alt="Santorini"
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 scrim-card" />
-                          <div className="relative z-10 text-white">
-                            <span className="rounded-full bg-foreground/85 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide backdrop-blur">
-                              Featured Region
-                            </span>
-                            <h4 className="mt-2 font-heading text-lg font-medium">Santorini Caldera</h4>
-                            <p className="text-xs text-white/80">18 Handpicked Cliffside Suites</p>
-                            <p className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-champagne-light">
-                              View region <ArrowRight size={12} />
-                            </p>
-                          </div>
-                        </Link>
+                        <MegaMenuFeaturedImage
+                          topic={megaDestItem.topic}
+                          title={megaDestItem.title}
+                          subtitle={megaDestItem.subtitle}
+                          badge="Curated Haven"
+                          linkTo={megaDestItem.to}
+                        />
                       </div>
                     </div>
                   )}

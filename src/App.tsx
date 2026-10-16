@@ -40,6 +40,7 @@ const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const PhotoCredits = lazy(() => import('@/pages/PhotoCredits'));
 
 const AuthenticatedApp: React.FC = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -77,6 +78,8 @@ const AuthenticatedApp: React.FC = () => {
           <Route path="/terms" element={<Terms />} />
           <Route path="/report" element={<Report />} />
           <Route path="/host" element={<HostDashboard />} />
+          <Route path="/photo-credits" element={<PhotoCredits />} />
+          <Route path="/credits" element={<PhotoCredits />} />
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
             <Route path="/booking/:id" element={<BookingFlow />} />
             <Route path="/appointment/:id" element={<AppointmentBooking />} />

@@ -5,6 +5,7 @@ import { ArrowRight, ArrowDown, ShieldCheck, Sparkles, Globe2 } from "lucide-rea
 import { getListings } from "@/services";
 import SearchBar from "@/components/search/SearchBar";
 import CategoryChips from "@/components/listings/CategoryChips";
+import CategoryPhotoCards from "@/components/listings/CategoryPhotoCards";
 import ListingCard from "@/components/listings/ListingCard";
 import PopularDestinations from "@/components/home/PopularDestinations";
 import TestimonialsMarquee from "@/components/home/TestimonialsMarquee";
@@ -148,6 +149,9 @@ export default function Home() {
             active={selectedCategory}
             onSelect={handleCategorySelect}
           />
+          <div className="mt-6">
+            <CategoryPhotoCards />
+          </div>
         </SectionReveal>
       </section>
 

@@ -14,6 +14,8 @@ import SectionReveal from "@/components/ui/SectionReveal";
 import AroundThisStay from "@/components/places/AroundThisStay";
 import SimilarStays from "@/components/places/SimilarStays";
 import GoogleMap from "@/components/maps/GoogleMap";
+import PhotoCredit from "@/components/ui/PhotoCredit";
+import { getPhotos, imageUrl } from "@/lib/photos";
 import { formatCurrency, nightsBetween, calcTotal } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useSeo } from "@/lib/seo";
@@ -62,6 +64,19 @@ export default function ListingDetail() {
     });
   }, [id]);
 
+  // Ensure every listing has a luxury gallery of 8+ photos
+  const { galleryPhotos, images } = React.useMemo(() => {
+    const rawImages = listing?.images || [];
+    const topic = listing?.category || listing?.city || "beachfront villa";
+    const unsplashPhotos = getPhotos(topic, 10);
+    const unsplashUrls = unsplashPhotos.map((p) => imageUrl(p, 1600, 85));
+    const merged = Array.from(new Set([...rawImages, ...unsplashUrls]));
+    return {
+      galleryPhotos: unsplashPhotos,
+      images: merged.slice(0, 10),
+    };
+  }, [listing]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center pt-16">
@@ -80,7 +95,6 @@ export default function ListingDetail() {
     );
   }
 
-  const images = listing.images || [];
   const nights = nightsBetween(checkIn, checkOut);
 
   const dayUsePrice = (listing as any).dayUsePricePerBlock || Math.round((listing as any).pricePerNight * 0.45);
@@ -154,15 +168,40 @@ export default function ListingDetail() {
       {/* Bento gallery */}
       <div className="container-haven mt-5 sm:mt-6">
         <div className="grid grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-3xl sm:gap-3" style={{ height: "clamp(320px, 48vh, 520px)" }}>
-          <button onClick={() => setLightbox(0)} className="group relative col-span-4 row-span-2 sm:col-span-2">
-            <SmartImage src={images[0]} alt={listing.title} className="h-full w-full" imgClassName="group-hover:scale-105" />
+          <button onClick={() => setLightbox(0)} className="group relative col-span-4 row-span-2 sm:col-span-2 overflow-hidden">
+            <SmartImage src={images[0]} alt={listing.title} className="h-full w-full" imgClassName="group-hover:scale-105 transition-transform duration-500" />
             <HoverHint />
+            {galleryPhotos[0] && (
+              <div className="absolute bottom-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <PhotoCredit photo={galleryPhotos[0]} variant="badge" />
+              </div>
+            )}
           </button>
-          {images.slice(1, 5).map((img, i) => (
-            <button key={i} onClick={() => setLightbox(i + 1)} className="group relative hidden sm:block">
-              <SmartImage src={img} alt="" className="h-full w-full" imgClassName="group-hover:scale-105" />
-            </button>
-          ))}
+          {images.slice(1, 5).map((img, i) => {
+            const isLast = i === 3;
+            const photoObj = galleryPhotos[i + 1] || null;
+            return (
+              <button
+                key={i}
+                onClick={() => setLightbox(i + 1)}
+                className="group relative hidden sm:block overflow-hidden"
+              >
+                <SmartImage src={img} alt="" className="h-full w-full" imgClassName="group-hover:scale-105 transition-transform duration-500" />
+                {photoObj && !isLast && (
+                  <div className="absolute bottom-2 left-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <PhotoCredit photo={photoObj} variant="badge" />
+                  </div>
+                )}
+                {isLast && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-colors group-hover:bg-black/55">
+                    <span className="flex items-center gap-1.5 rounded-full border border-white/30 bg-black/60 px-4 py-2 text-xs font-semibold text-white shadow-xl backdrop-blur-md">
+                      Show all {images.length} photos
+                    </span>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
         <button onClick={() => setLightbox(0)} className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-medium hover:bg-secondary sm:hidden">
           Show all {images.length} photos <ChevronRight size={14} />
@@ -358,6 +397,7 @@ export default function ListingDetail() {
         <GalleryLightbox
           images={images}
           index={lightbox}
+          photos={galleryPhotos}
           onClose={() => setLightbox(null)}
           onIndex={setLightbox}
         />
